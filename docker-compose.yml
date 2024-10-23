@@ -1,0 +1,14 @@
+services:
+  nadruk-mysql-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: prestashop
+      MYSQL_USER: yarn_user
+      MYSQL_PASSWORD: yarn_password
+    
+  nadruk-prestashop:
+    image: kubek-z-nadrukiem-prestashop:latest 
+    restart: always
+    
