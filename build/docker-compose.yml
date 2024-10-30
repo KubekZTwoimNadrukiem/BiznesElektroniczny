@@ -1,0 +1,27 @@
+services:
+  nadruk-mariadb:
+    container_name: nadruk-mariadb
+    image: mariadb:10
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: prestashop
+      MARIADB_USER: yarn_user
+      MARIADB_PASSWORD: yarn_password
+    networks:
+      - kubek-z-twoim-nadrukiem
+
+  nadruk-prestashop:
+    container_name: nadruk-prestashop
+    image: prestashop/prestashop:1.7.8.8 
+    restart: always
+    environment:
+      DB_SERVER: nadruk-mariadb
+      DB_NAME: prestashop
+      DB_USER: yarn_user
+      DB_PASSWD: yarn_password
+    networks:
+      - kubek-z-twoim-nadrukiem
+
+networks:
+  kubek-z-twoim-nadrukiem:
