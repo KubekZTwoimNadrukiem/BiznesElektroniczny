@@ -40,8 +40,8 @@ class statsbestcustomers extends ModuleGrid
     public function __construct()
     {
         $this->name = 'statsbestcustomers';
-        $this->tab = 'administration';
-        $this->version = '2.0.4';
+        $this->tab = 'analytics_stats';
+        $this->version = '2.0.3';
         $this->author = 'PrestaShop';
         $this->need_instance = 0;
 
@@ -100,10 +100,10 @@ class statsbestcustomers extends ModuleGrid
 
     public function install()
     {
-        return parent::install() && $this->registerHook('displayAdminStatsModules');
+        return parent::install() && $this->registerHook('AdminStatsModules');
     }
 
-    public function hookDisplayAdminStatsModules($params)
+    public function hookAdminStatsModules($params)
     {
         $engine_params = [
             'id' => 'id_customer',

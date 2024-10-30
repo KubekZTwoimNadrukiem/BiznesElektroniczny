@@ -26,10 +26,10 @@
 	var currency_format = {$currency->format|floatval};
 	var currency_sign = '{$currency->sign|@addcslashes:'\''}';
 	var currency_blank = {$currency->blank|intval};
-	var priceDisplayPrecision = 0;
+	var priceDisplayPrecision = {$_PS_PRICE_DISPLAY_PRECISION_|intval};
 </script>
 <div class="clearfix"></div>
-<section id="dashtrends" class="panel widget">
+<section id="dashtrends" class="panel widget{if $allow_push} allow_push{/if}">
 	<header class="panel-heading">
 		<i class="icon-bar-chart"></i> {l s='Dashboard' d='Modules.Dashtrends.Admin'}
 		<span class="panel-heading-action">

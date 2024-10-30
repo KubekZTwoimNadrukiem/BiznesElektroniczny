@@ -25,9 +25,7 @@
  */
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Crypto\Hashing;
-use PrestaShopBundle\Security\Admin\SessionRenewer;
 
 /**
  * Class EmployeeCore.
@@ -491,11 +489,6 @@ class EmployeeCore extends ObjectModel
         if (isset(Context::getContext()->cookie)) {
             Context::getContext()->cookie->logout();
             Context::getContext()->cookie->write();
-        }
-
-        $sfContainer = SymfonyContainer::getInstance();
-        if ($sfContainer !== null) {
-            $sfContainer->get(SessionRenewer::class)->renew();
         }
 
         $this->id = null;

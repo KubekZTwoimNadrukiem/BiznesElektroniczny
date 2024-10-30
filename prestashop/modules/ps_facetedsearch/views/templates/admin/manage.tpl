@@ -33,19 +33,18 @@
   </div>
   <div class="row">
 	<div class="alert alert-info">
-		<p>{l s='We recommend to set regular cron tasks to manage the indexes and cache on daily/weekly basis.' d='Modules.Facetedsearch.Admin'}</p>
-		<br>
-	  {l s='Add missing products to price index:' d='Modules.Facetedsearch.Admin'} <strong>{$price_indexer_url}</strong>
+	  {l s='You can set a cron job that will rebuild price index using the following URL:' d='Modules.Facetedsearch.Admin'}
 	  <br>
-		{l s='Rebuild price index:' d='Modules.Facetedsearch.Admin'} <strong>{$full_price_indexer_url}</strong>
+	  <strong>{$price_indexer_url}</strong>
 	  <br>
-		{l s='Rebuild attribute index:' d='Modules.Facetedsearch.Admin'} <strong>{$attribute_indexer_url}</strong>
-		<br>
-		{l s='Flush block cache:' d='Modules.Facetedsearch.Admin'} <strong>{$clear_cache_url}</strong>
-		<br>
-		<br>
-		<p>{l s='A nightly rebuild is recommended.' d='Modules.Facetedsearch.Admin'}</p>
+	  <br>
+	  {l s='You can set a cron job that will rebuild attribute index using the following URL:' d='Modules.Facetedsearch.Admin'}
+	  <br>
+	  <strong>{$attribute_indexer_url}</strong>
 	</div>
+  </div>
+  <div class="row">
+	<div class="alert alert-info">{l s='A nightly rebuild is recommended.' d='Modules.Facetedsearch.Admin'}</div>
   </div>
 </div>
 <div class="panel">
@@ -57,7 +56,6 @@
 		  <tr>
 			<th class="fixed-width-xs center"><span class="title_box">{l s='ID' d='Admin.Global'}</span></th>
 			<th><span class="title_box text-left">{l s='Name' d='Admin.Global'}</span></th>
-			<th><span class="title_box">{l s='Pages' d='Admin.Global'}</span></th>
 			<th class="fixed-width-sm center"><span class="title_box">{l s='Categories' d='Admin.Global'}</span></th>
 			<th class="fixed-width-lg"><span class="title_box">{l s='Created on' d='Modules.Facetedsearch.Admin'}</span></th>
 			<th class="fixed-width-sm"><span class="title_box text-right">{l s='Actions' d='Modules.Facetedsearch.Admin'}</span></th>
@@ -66,11 +64,10 @@
 		<tbody>
 		  {foreach $filters_templates as $template}
 			<tr>
-			  <td class="center">{$template['id_layered_filter']}</td>
+			  <td class="center">{(int)$template['id_layered_filter']}</td>
 			  <td class="text-left">{$template['name']}</td>
-			  <td>{$template['controllers']}</td>
-			  <td class="center">{$template['n_categories']}</td>
-			  <td>{$template['date_add']}</td>
+			  <td class="center">{(int)$template['n_categories']}</td>
+			  <td>{Tools::displayDate($template['date_add'],null , true)}</td>
 			  <td>
 				{if empty($limit_warning)}
 				  <div class="btn-group-action">
@@ -126,11 +123,6 @@
 		  <a class="slide-button btn"></a>
 		</span>
 	  </div>
-		<div class="col-lg-9 col-lg-offset-3">
-		<div class="help-block">
-		  {l s='This option caches filtering blocks, so the module does not have to query for matching products all the time. The cache is invalidated on every modification on your store. If you encounter some incosistencies, disable this cache or make sure to flush it if needed.' d='Modules.Facetedsearch.Admin'}
-		</div>
-	  </div>
 	</div>
 
 	<div class="form-group">
@@ -148,11 +140,6 @@
 		  <a class="slide-button btn"></a>
 		</span>
 	  </div>
-		<div class="col-lg-9 col-lg-offset-3">
-		<div class="help-block">
-		  {l s='Enable or disable display of matching products after filters. Disabling this won\'t bring any performance benefit, because matching products need to be calculated anyway.' d='Modules.Facetedsearch.Admin'}
-		</div>
-	  </div>
 	</div>
 
 	<div class="form-group">
@@ -169,11 +156,6 @@
 		  </label>
 		  <a class="slide-button btn"></a>
 		</span>
-	  </div>
-		<div class="col-lg-9 col-lg-offset-3">
-		<div class="help-block">
-		  {l s='Enable this, if you want to display products from subcategories, even if they are not specifically assigned to the currently browsed category.' d='Modules.Facetedsearch.Admin'}
-		</div>
 	  </div>
 	</div>
 
@@ -200,14 +182,9 @@
 	</div>
 
 	<div class="form-group">
-	  <label class="col-lg-3 control-label">{l s='Category filter depth' d='Modules.Facetedsearch.Admin'}</label>
+	  <label class="col-lg-3 control-label">{l s='Category filter depth (0 for no limits, 1 by default)' d='Modules.Facetedsearch.Admin'}</label>
 	  <div class="col-lg-9">
 		<input type="text" name="ps_layered_filter_category_depth" value="{if $category_depth !== false}{$category_depth}{else}1{/if}" class="fixed-width-sm" />
-	  </div>
-		<div class="col-lg-9 col-lg-offset-3">
-		<div class="help-block">
-		  {l s='This option controls the behavior of category filter block - how deep children of the currently browsed category you want to display? The default value is 1 - only the direct children. Use 0 for unlimited depth.' d='Modules.Facetedsearch.Admin'}
-		</div>
 	  </div>
 	</div>
 
@@ -262,43 +239,6 @@
 	  </div>
 	</div>
 
-  <div class="form-group">
-    <label class="col-lg-3 control-label">{l s='Use Jquery UI slider' d='Modules.Facetedsearch.Admin'}</label>
-    <div class="col-lg-9">
-    <span class="switch prestashop-switch fixed-width-lg">
-      <input type="radio" name="ps_use_jquery_ui_slider" id="ps_use_jquery_ui_slider_on" value="1"{if $use_jquery_ui_slider} checked="checked"{/if}>
-      <label for="ps_use_jquery_ui_slider_on" class="radioCheck">
-      <i class="color_success"></i> {l s='Yes' d='Admin.Global'}
-      </label>
-      <input type="radio" name="ps_use_jquery_ui_slider" id="ps_use_jquery_ui_slider_off" value="0"{if !$use_jquery_ui_slider} checked="checked"{/if}>
-      <label for="ps_use_jquery_ui_slider_off" class="radioCheck">
-      <i class="color_danger"></i> {l s='No' d='Admin.Global'}
-      </label>
-      <a class="slide-button btn"></a>
-    </span>
-    </div>
-    <div class="col-lg-9 col-lg-offset-3">
-      <div class="help-block">
-        {l s='Switch this off only if your theme does not use Jquery UI slider. It is recommended to keep it on when using classic theme.' d='Modules.Facetedsearch.Admin'}
-      </div>
-    </div>
-  </div>
-
-	<div class="form-group">
-		<label class="control-label col-lg-3">{l s='Default filter template for new categories' d='Modules.Facetedsearch.Admin'}</label>				
-		<div class="col-lg-9">
-			<select class="form-control fixed-width-xxl" name="ps_layered_default_category_template" id="ps_layered_default_category_template">
-				<option value="0" {if empty($default_category_template)} selected="selected" {/if}>{l s='None' d='Admin.Global'}</option>
-				{foreach $filters_templates as $template}
-					<option value="{$template['id_layered_filter']}" {if $default_category_template == $template['id_layered_filter']} selected="selected" {/if}>{$template['name']}</option>
-				{/foreach}
-			</select>
-		</div>
-		<div class="col-lg-9 col-lg-offset-3">
-			<div class="help-block">{l s='If you want to automatically assign a filter template to new categories, select it here.' d='Modules.Facetedsearch.Admin'}</div>
-		</div>
-	</div>
-
 	<div class="panel-footer">
 	  <button type="submit" class="btn btn-default pull-right" name="submitLayeredSettings"><i class="process-icon-save"></i> {l s='Save' d='Admin.Actions'}</button>
 	</div>
@@ -323,5 +263,4 @@
   translations.loading = '{l s='Loading...' js=1 d='Modules.Facetedsearch.Admin'}';
   translations.delete_all_filters_templates = '{l s='You selected -All categories-: all existing filter templates will be deleted. Is it OK?' js=1 d='Modules.Facetedsearch.Admin'}';
   translations.no_selected_categories = '{l s='You must select at least one category' js=1 d='Modules.Facetedsearch.Admin'}';
-	translations.no_selected_controllers = '{l s='You must select at least one page' js=1 d='Modules.Facetedsearch.Admin'}';
 </script>

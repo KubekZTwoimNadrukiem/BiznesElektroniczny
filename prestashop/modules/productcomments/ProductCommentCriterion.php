@@ -105,7 +105,7 @@ class ProductCommentCriterion extends ObjectModel
 
         return Db::getInstance()->execute('
 			INSERT INTO `' . _DB_PREFIX_ . 'product_comment_criterion_product` (`id_product_comment_criterion`, `id_product`)
-			VALUES(' . (int) $this->id . ',' . $id_product . ')
+			VALUES(' . (int) $this->id . ',' . (int) $id_product . ')
 		');
     }
 
@@ -122,7 +122,7 @@ class ProductCommentCriterion extends ObjectModel
 
         return Db::getInstance()->execute('
 			INSERT INTO `' . _DB_PREFIX_ . 'product_comment_criterion_category` (`id_product_comment_criterion`, `id_category`)
-			VALUES(' . (int) $this->id . ',' . $id_category . ')
+			VALUES(' . (int) $this->id . ',' . (int) $id_category . ')
 		');
     }
 
@@ -130,8 +130,6 @@ class ProductCommentCriterion extends ObjectModel
      * Add grade to a criterion
      *
      * @return bool succeed
-     *
-     * @deprecated 4.0.0
      */
     public function addGrade($id_product_comment, $grade)
     {
@@ -147,7 +145,7 @@ class ProductCommentCriterion extends ObjectModel
         return Db::getInstance()->execute('
 		INSERT INTO `' . _DB_PREFIX_ . 'product_comment_grade`
 		(`id_product_comment`, `id_product_comment_criterion`, `grade`) VALUES(
-		' . $id_product_comment . ',
+		' . (int) ($id_product_comment) . ',
 		' . (int) $this->id . ',
 		' . (int) ($grade) . ')');
     }
@@ -156,8 +154,6 @@ class ProductCommentCriterion extends ObjectModel
      * Get criterion by Product
      *
      * @return array Criterion
-     *
-     * @deprecated 4.0.0
      */
     public static function getByProduct($id_product, $id_lang)
     {
@@ -173,7 +169,7 @@ class ProductCommentCriterion extends ObjectModel
             $alias = 'ps';
         }
 
-        $cache_id = 'ProductCommentCriterion::getByProduct_' . $id_product . '-' . $id_lang;
+        $cache_id = 'ProductCommentCriterion::getByProduct_' . (int) $id_product . '-' . (int) $id_lang;
         if (!Cache::isStored($cache_id)) {
             $result = Db::getInstance()->executeS('
 				SELECT pcc.`id_product_comment_criterion`, pccl.`name`
@@ -181,12 +177,12 @@ class ProductCommentCriterion extends ObjectModel
 				LEFT JOIN `' . _DB_PREFIX_ . 'product_comment_criterion_lang` pccl
 					ON (pcc.id_product_comment_criterion = pccl.id_product_comment_criterion)
 				LEFT JOIN `' . _DB_PREFIX_ . 'product_comment_criterion_product` pccp
-					ON (pcc.`id_product_comment_criterion` = pccp.`id_product_comment_criterion` AND pccp.`id_product` = ' . $id_product . ')
+					ON (pcc.`id_product_comment_criterion` = pccp.`id_product_comment_criterion` AND pccp.`id_product` = ' . (int) $id_product . ')
 				LEFT JOIN `' . _DB_PREFIX_ . 'product_comment_criterion_category` pccc
 					ON (pcc.`id_product_comment_criterion` = pccc.`id_product_comment_criterion`)
 				LEFT JOIN `' . _DB_PREFIX_ . 'product' . $table . '` ' . $alias . '
-					ON (' . $alias . '.id_category_default = pccc.id_category AND ' . $alias . '.id_product = ' . $id_product . ')
-				WHERE pccl.`id_lang` = ' . $id_lang . '
+					ON (' . $alias . '.id_category_default = pccc.id_category AND ' . $alias . '.id_product = ' . (int) $id_product . ')
+				WHERE pccl.`id_lang` = ' . (int) ($id_lang) . '
 				AND (
 					pccp.id_product IS NOT NULL
 					OR ps.id_product IS NOT NULL
@@ -205,8 +201,6 @@ class ProductCommentCriterion extends ObjectModel
      * Get Criterions
      *
      * @return array Criterions
-     *
-     * @deprecated 6.0.0
      */
     public static function getCriterions($id_lang, $type = false, $active = false)
     {
@@ -218,7 +212,7 @@ class ProductCommentCriterion extends ObjectModel
 			SELECT pcc.`id_product_comment_criterion`, pcc.id_product_comment_criterion_type, pccl.`name`, pcc.active
 			FROM `' . _DB_PREFIX_ . 'product_comment_criterion` pcc
 			JOIN `' . _DB_PREFIX_ . 'product_comment_criterion_lang` pccl ON (pcc.id_product_comment_criterion = pccl.id_product_comment_criterion)
-			WHERE pccl.`id_lang` = ' . $id_lang . ($active ? ' AND active = 1' : '') . ($type ? ' AND id_product_comment_criterion_type = ' . (int) $type : '') . '
+			WHERE pccl.`id_lang` = ' . (int) $id_lang . ($active ? ' AND active = 1' : '') . ($type ? ' AND id_product_comment_criterion_type = ' . (int) $type : '') . '
 			ORDER BY pccl.`name` ASC';
         $criterions = Db::getInstance()->executeS($sql);
 
@@ -230,9 +224,6 @@ class ProductCommentCriterion extends ObjectModel
         return $criterions;
     }
 
-    /**
-     * @deprecated 6.0.0
-     */
     public function getProducts()
     {
         $res = Db::getInstance()->executeS('
@@ -249,9 +240,6 @@ class ProductCommentCriterion extends ObjectModel
         return $products;
     }
 
-    /**
-     * @deprecated 6.0.0
-     */
     public function getCategories()
     {
         $res = Db::getInstance()->executeS('
@@ -268,9 +256,6 @@ class ProductCommentCriterion extends ObjectModel
         return $criterions;
     }
 
-    /**
-     * @deprecated 6.0.0
-     */
     public function deleteCategories()
     {
         return Db::getInstance()->execute('
@@ -278,9 +263,6 @@ class ProductCommentCriterion extends ObjectModel
 			WHERE `id_product_comment_criterion` = ' . (int) $this->id);
     }
 
-    /**
-     * @deprecated 6.0.0
-     */
     public function deleteProducts()
     {
         return Db::getInstance()->execute('
@@ -288,9 +270,6 @@ class ProductCommentCriterion extends ObjectModel
 			WHERE `id_product_comment_criterion` = ' . (int) $this->id);
     }
 
-    /**
-     * @deprecated 6.0.0
-     */
     public static function getTypes()
     {
         // Instance of module class for translations

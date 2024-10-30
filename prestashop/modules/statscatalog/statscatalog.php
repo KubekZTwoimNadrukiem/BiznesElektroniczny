@@ -41,8 +41,8 @@ class statscatalog extends Module
     public function __construct()
     {
         $this->name = 'statscatalog';
-        $this->tab = 'administration';
-        $this->version = '2.0.4';
+        $this->tab = 'analytics_stats';
+        $this->version = '2.0.2';
         $this->author = 'PrestaShop';
         $this->need_instance = 0;
 
@@ -55,7 +55,7 @@ class statscatalog extends Module
 
     public function install()
     {
-        return parent::install() && $this->registerHook('displayAdminStatsModules');
+        return parent::install() && $this->registerHook('AdminStatsModules');
     }
 
     public function getQuery1()
@@ -145,7 +145,7 @@ class statscatalog extends Module
         return ['total' => Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->NumRows(), 'result' => $result];
     }
 
-    public function hookDisplayAdminStatsModules($params)
+    public function hookAdminStatsModules($params)
     {
         $categories = Category::getCategories($this->context->language->id, true, false);
         $product_token = Tools::getAdminToken('AdminProducts' . (int) Tab::getIdFromClassName('AdminProducts') . (int) $this->context->employee->id);
@@ -239,7 +239,7 @@ class statscatalog extends Module
 						<td>' . $product['name'] . '</td>
 						<td class="left">
 							<div class="btn-group btn-group-action">
-								<a class="btn btn-default" href="' . Tools::safeOutput('index.php?controller=AdminProducts&id_product=' . $product['id_product'] . '&addproduct&token=' . $product_token) . '" target="_blank">
+								<a class="btn btn-default" href="' . Tools::safeOutput('index.php?tab=AdminProducts&id_product=' . $product['id_product'] . '&addproduct&token=' . $product_token) . '" target="_blank">
 									<i class="icon-edit"></i> ' . $this->trans('Edit', [], 'Admin.Global') . '
 								</a>
 								<button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button">

@@ -28,6 +28,7 @@ use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -35,15 +36,13 @@ if (!defined('_PS_VERSION_')) {
 
 class Ps_Crossselling extends Module implements WidgetInterface
 {
-    const LIMIT_FACTOR = 50;
     private $templateFile;
 
     public function __construct()
     {
         $this->name = 'ps_crossselling';
-        $this->tab = 'pricing_promotion';
         $this->author = 'PrestaShop';
-        $this->version = '2.0.2';
+        $this->version = '2.0.1';
         $this->need_instance = 0;
 
         $this->ps_versions_compliancy = [
@@ -106,15 +105,12 @@ class Ps_Crossselling extends Module implements WidgetInterface
 
     public function hookActionOrderStatusPostUpdate($params)
     {
-        $products = OrderDetail::getList((int) $params['id_order']);
-        foreach ($products as $p) {
-            $this->_clearCache('*', $this->getCacheIdKey([$p['product_id']]));
-        }
+        $this->_clearCache('*');
     }
 
     protected function _clearCache($template, $cacheId = null, $compileId = null)
     {
-        parent::_clearCache($this->templateFile, $cacheId);
+        parent::_clearCache($this->templateFile);
     }
 
     public function renderForm()
@@ -250,9 +246,7 @@ class Ps_Crossselling extends Module implements WidgetInterface
         FROM ' . _DB_PREFIX_ . 'orders o
         LEFT JOIN ' . _DB_PREFIX_ . 'order_detail od ON (od.id_order = o.id_order)
         WHERE o.valid = 1
-        AND od.product_id IN (' . implode(',', $productIds) . ')
-        ORDER BY o.id_order DESC
-        LIMIT ' . ((int) Configuration::get('CROSSSELLING_NBR')) * static::LIMIT_FACTOR;
+        AND od.product_id IN (' . implode(',', $productIds) . ')';
 
         $orders = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS($q_orders);
 
@@ -278,10 +272,35 @@ class Ps_Crossselling extends Module implements WidgetInterface
                 FROM ' . _DB_PREFIX_ . 'order_detail od
                 LEFT JOIN ' . _DB_PREFIX_ . 'product p ON (p.id_product = od.product_id)
                 ' . Shop::addSqlAssociation('product', 'p') .
-                $sql_groups_join . '
+                (Combination::isFeatureActive() ? 'LEFT JOIN `' . _DB_PREFIX_ . 'product_attribute` pa ON (p.`id_product` = pa.`id_product`)
+                ' . Shop::addSqlAssociation(
+                        'product_attribute',
+                        'pa',
+                        false,
+                        'product_attribute_shop.`default_on` = 1'
+                    ) . '
+                ' . Product::sqlStock(
+                        'p',
+                        'product_attribute_shop',
+                        false,
+                        $this->context->shop
+                    ) : Product::sqlStock(
+                    'p',
+                    'product',
+                    false,
+                    $this->context->shop
+                )) . '
+                LEFT JOIN ' . _DB_PREFIX_ . 'product_lang pl ON (pl.id_product = od.product_id' .
+                Shop::addSqlRestrictionOnLang('pl') . ')
+                LEFT JOIN ' . _DB_PREFIX_ . 'category_lang cl ON (cl.id_category = product_shop.id_category_default'
+                . Shop::addSqlRestrictionOnLang('cl') . ')
+                LEFT JOIN ' . _DB_PREFIX_ . 'image i ON (i.id_product = od.product_id)
+                ' . $sql_groups_join . '
                 WHERE od.id_order IN (' . $list . ')
+                AND pl.id_lang = ' . (int) $this->context->language->id . '
+                AND cl.id_lang = ' . (int) $this->context->language->id . '
                 AND od.product_id NOT IN (' . $list_product_ids . ')
-                AND product_shop.visibility IN (\'both\',\'catalog\')
+                AND i.cover = 1
                 AND product_shop.active = 1
                 ' . $sql_groups_where . '
                 ORDER BY RAND()
@@ -296,27 +315,15 @@ class Ps_Crossselling extends Module implements WidgetInterface
 
             $presenterFactory = new ProductPresenterFactory($this->context);
             $presentationSettings = $presenterFactory->getPresentationSettings();
-            if (version_compare(_PS_VERSION_, '1.7.5', '>=')) {
-                $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
-                    new ImageRetriever(
-                        $this->context->link
-                    ),
-                    $this->context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $this->context->getTranslator()
-                );
-            } else {
-                $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                    new ImageRetriever(
-                        $this->context->link
-                    ),
-                    $this->context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $this->context->getTranslator()
-                );
-            }
+            $presenter = new ProductListingPresenter(
+                new ImageRetriever(
+                    $this->context->link
+                ),
+                $this->context->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                $this->context->getTranslator()
+            );
 
             $productsForTemplate = [];
 

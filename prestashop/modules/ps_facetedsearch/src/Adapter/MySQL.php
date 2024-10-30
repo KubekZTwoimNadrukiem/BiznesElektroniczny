@@ -93,26 +93,23 @@ class MySQL extends AbstractAdapter
      */
     public function getQuery()
     {
-        // Prepare mapping for joined tables
         $filterToTableMapping = $this->getFieldMapping();
-
-        // Process and generate all fields for the SQL query below
         $orderField = $this->computeOrderByField($filterToTableMapping);
+
+        if ($this->getInitialPopulation() === null) {
+            $referenceTable = _DB_PREFIX_ . 'product';
+        } else {
+            $referenceTable = '(' . $this->getInitialPopulation()->getQuery() . ')';
+        }
+
+        $query = 'SELECT ';
+
         $selectFields = $this->computeSelectFields($filterToTableMapping);
         $whereConditions = $this->computeWhereConditions($filterToTableMapping);
         $joinConditions = $this->computeJoinConditions($filterToTableMapping);
         $groupFields = $this->computeGroupByFields($filterToTableMapping);
 
-        // Now, let's build the query...
-        // If this query IS the initial population (the base table), we are selecting from product table
-        if ($this->getInitialPopulation() === null) {
-            $referenceTable = _DB_PREFIX_ . 'product';
-        // If not, we will call this function again but for the initial population
-        } else {
-            $referenceTable = '(' . $this->getInitialPopulation()->getQuery() . ')';
-        }
-
-        $query = 'SELECT ' . implode(', ', $selectFields) . ' FROM ' . $referenceTable . ' p';
+        $query .= implode(', ', $selectFields) . ' FROM ' . $referenceTable . ' p';
 
         foreach ($joinConditions as $joinAliasInfos) {
             foreach ($joinAliasInfos as $tableAlias => $joinInfos) {
@@ -190,13 +187,6 @@ class MySQL extends AbstractAdapter
                 $this->getContext()->shop->id . ' AND ps.active = TRUE)',
                 'joinType' => self::INNER_JOIN,
             ],
-            'visibility' => [
-                'tableName' => 'product_shop',
-                'tableAlias' => 'ps',
-                'joinCondition' => '(p.id_product = ps.id_product AND ps.id_shop = ' .
-                    $this->getContext()->shop->id . ' AND ps.active = TRUE)',
-                'joinType' => self::INNER_JOIN,
-            ],
             'id_feature_value' => [
                 'tableName' => 'feature_product',
                 'tableAlias' => 'fp',
@@ -220,7 +210,7 @@ class MySQL extends AbstractAdapter
                 'tableAlias' => 'm',
                 'fieldName' => 'name',
                 'joinCondition' => '(p.id_manufacturer = m.id_manufacturer)',
-                'joinType' => self::LEFT_JOIN,
+                'joinType' => self::INNER_JOIN,
             ],
             'name' => [
                 'tableName' => 'product_lang',
@@ -311,24 +301,6 @@ class MySQL extends AbstractAdapter
                 'joinCondition' => '(psales.id_product = p.id_product)',
                 'joinType' => self::LEFT_JOIN,
             ],
-            'reduction' => [
-                'tableName' => 'specific_price',
-                'tableAlias' => 'sp',
-                'joinCondition' => '(
-                    sp.id_product = p.id_product AND 
-                    sp.id_shop IN (0, ' . $this->getContext()->shop->id . ') AND 
-                    sp.id_currency IN (0, ' . $this->getContext()->currency->id . ') AND 
-                    sp.id_country IN (0, ' . $this->getContext()->country->id . ') AND 
-                    sp.id_group IN (0, ' . $this->getContext()->customer->id_default_group . ') AND 
-                    sp.from_quantity = 1 AND
-                    sp.reduction > 0 AND
-                    sp.id_customer = 0 AND
-                    sp.id_cart = 0 AND 
-                    (sp.from = \'0000-00-00 00:00:00\' OR \'' . date('Y-m-d H:i:s') . '\' >= sp.from) AND 
-                    (sp.to = \'0000-00-00 00:00:00\' OR \'' . date('Y-m-d H:i:s') . '\' <= sp.to) 
-                )',
-                'joinType' => self::LEFT_JOIN,
-            ],
         ];
 
         return $filterToTableMapping;
@@ -368,26 +340,23 @@ class MySQL extends AbstractAdapter
     {
         $orderField = $this->getOrderField();
 
-        // If we have set an initial population, add this field into initial population selects
         if ($this->getInitialPopulation() !== null && !empty($orderField)) {
             $this->getInitialPopulation()->addSelectField($orderField);
         }
 
-        // Do not try to process the orderField if it already has an alias, or if it's a group function
+        // do not try to process the orderField if it already has an alias, or if it's a group function
         if (empty($orderField) || strpos($orderField, '.') !== false
             || strpos($orderField, '(') !== false) {
             return $orderField;
         }
 
-        // Alter order by field if it's a price column
         if ($orderField === 'price') {
             $orderField = $this->getOrderDirection() === 'asc' ? 'price_min' : 'price_max';
         }
 
-        // Add table mapping or p. prefix depending on field type
         $orderField = $this->computeFieldName($orderField, $filterToTableMapping, true);
 
-        // Alter order by field and add some products to the end of the list, if required
+        // put some products at the end of the list
         $orderField = $this->computeShowLast($orderField, $filterToTableMapping);
 
         return $orderField;
@@ -491,7 +460,6 @@ class MySQL extends AbstractAdapter
      */
     protected function computeSelectFields(array $filterToTableMapping)
     {
-        // Add already added select fields to current query
         $selectFields = [];
         foreach ($this->getSelectFields() as $key => $selectField) {
             $selectFields[] = $this->computeFieldName($selectField, $filterToTableMapping);
@@ -791,11 +759,8 @@ class MySQL extends AbstractAdapter
      */
     public function useFiltersAsInitialPopulation()
     {
-        // Initial population has NO LIMIT and no ORDER BY
         $this->setLimit(null);
         $this->setOrderField('');
-
-        // We add basic select fields we will need to matter what
         $this->setSelectFields(
             [
                 'id_product',
@@ -805,15 +770,9 @@ class MySQL extends AbstractAdapter
                 'weight',
                 'price',
                 'sales',
-                'on_sale',
-                'date_add',
             ]
         );
-
-        // Clone it, add it to initial population
         $this->initialPopulation = clone $this;
-
-        // Reset all filters so we start clean and add only the base select, we don't need anything else
         $this->resetAll();
         $this->addSelectField('id_product');
     }

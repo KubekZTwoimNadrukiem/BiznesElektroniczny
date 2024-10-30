@@ -1,21 +1,27 @@
 <?php
 /**
- * Copyright since 2007 PrestaShop SA and Contributors
- * PrestaShop is an International Registered Trademark & Property of PrestaShop SA
+ * 2007-2019 PrestaShop
  *
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Academic Free License version 3.0
- * that is bundled with this package in the file LICENSE.md.
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://opensource.org/licenses/AFL-3.0
+ * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
  * to license@prestashop.com so we can send you a copy immediately.
  *
- * @author    PrestaShop SA and Contributors <contact@prestashop.com>
- * @copyright Since 2007 PrestaShop SA and Contributors
- * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License version 3.0
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author PrestaShop SA <contact@prestashop.com>
+ * @copyright  2007-2019 PrestaShop SA
+ * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
  */
 class AdminBlockListingController extends ModuleAdminController
 {
@@ -70,7 +76,7 @@ class AdminBlockListingController extends ModuleAdminController
             $result = true;
             // Remove Custom icon
             if (!empty($blockPSR['custom_icon'])) {
-                $filePath = _PS_ROOT_DIR_ . $this->module->img_path_perso . '/' . basename($blockPSR['custom_icon']);
+                $filePath = _PS_ROOT_DIR_ . $blockPSR['custom_icon'];
                 if (file_exists($filePath)) {
                     $result = unlink($filePath);
                 }
@@ -100,7 +106,12 @@ class AdminBlockListingController extends ModuleAdminController
         $value = Tools::getValue('value');
         $result = false;
 
-        if ($this->isAuthorizedHookConfigurationKey($hook) && $this->isAuthorizedPositionValue($value)) {
+        if (!empty($hook) && in_array($value, [
+                blockreassurance::POSITION_NONE,
+                blockreassurance::POSITION_BELOW_HEADER,
+                blockreassurance::POSITION_ABOVE_HEADER,
+            ])
+        ) {
             $result = Configuration::updateValue($hook, $value);
         }
 
@@ -143,14 +154,6 @@ class AdminBlockListingController extends ModuleAdminController
         $type_link = (int) Tools::getValue('typelink');
         $id_cms = Tools::getValue('id_cms');
         $psr_languages = (array) json_decode(Tools::getValue('lang_values'));
-        $authExtensions = ['gif', 'jpg', 'jpeg', 'jpe', 'png', 'svg'];
-        $authMimeType = ['image/gif', 'image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png', 'image/svg', 'image/svg+xml'];
-
-        if (!empty($picto) && !in_array(pathinfo($picto, PATHINFO_EXTENSION), $authExtensions)) {
-            $errors[] = Context::getContext()->getTranslator()->trans('Image format not recognized, allowed formats are: .gif, .jpg, .png', [], 'Admin.Notifications.Error');
-
-            return $this->ajaxRenderJson(empty($errors) ? 'success' : 'error');
-        }
 
         $blockPsr = new ReassuranceActivity($id_block);
         if (!$id_block) {
@@ -160,11 +163,8 @@ class AdminBlockListingController extends ModuleAdminController
             $blockPsr->status = false;
         }
         $blockPsr->handleBlockValues($psr_languages, $type_link, $id_cms);
-        if (strpos($picto, $this->module->img_path_perso) !== false) {
-            $blockPsr->icon = '';
-            $blockPsr->custom_icon = $picto;
-        } else {
-            $blockPsr->icon = $picto;
+        $blockPsr->icon = $picto;
+        if (!empty($picto)) {
             $blockPsr->custom_icon = '';
         }
         $blockPsr->date_add = date('Y-m-d H:i:s');
@@ -176,6 +176,8 @@ class AdminBlockListingController extends ModuleAdminController
             $filename = $customImage['name'];
 
             // validateUpload return false if no error (false -> OK)
+            $authExtensions = ['gif', 'jpg', 'jpeg', 'jpe', 'png', 'svg'];
+            $authMimeType = ['image/gif', 'image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png', 'image/svg', 'image/svg+xml'];
             if (version_compare(_PS_VERSION_, '1.7.7.0', '>=')) {
                 // PrestaShop 1.7.7.0+
                 $validUpload = ImageManager::validateUpload(
@@ -249,37 +251,5 @@ class AdminBlockListingController extends ModuleAdminController
 
         // Response
         $this->ajaxRenderJson($result ? 'success' : 'error');
-    }
-
-    /**
-     * @param string $hook
-     *
-     * @return bool
-     */
-    private function isAuthorizedHookConfigurationKey($hook)
-    {
-        return
-            !empty($hook) &&
-            in_array($hook, [
-                blockreassurance::PSR_HOOK_HEADER,
-                blockreassurance::PSR_HOOK_FOOTER,
-                blockreassurance::PSR_HOOK_PRODUCT,
-                blockreassurance::PSR_HOOK_CHECKOUT,
-            ], true)
-        ;
-    }
-
-    /**
-     * @param string $value
-     *
-     * @return bool
-     */
-    private function isAuthorizedPositionValue($value)
-    {
-        return in_array((int) $value, [
-            blockreassurance::POSITION_NONE,
-            blockreassurance::POSITION_BELOW_HEADER,
-            blockreassurance::POSITION_ABOVE_HEADER,
-        ], true);
     }
 }

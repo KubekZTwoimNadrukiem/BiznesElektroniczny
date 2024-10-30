@@ -69,7 +69,7 @@ VALUES (' . (int) $params['id_attribute_group'] . ', ' . (int) Tools::getValue('
                 (`id_attribute_group`, `id_lang`, `url_name`, `meta_title`)
                 VALUES (
                 ' . (int) $params['id_attribute_group'] . ', ' . (int) $language['id_lang'] . ',
-                \'' . pSQL(Tools::str2url($seoUrl)) . '\',
+                \'' . pSQL(Tools::link_rewrite($seoUrl)) . '\',
                 \'' . pSQL($metaTitle, true) . '\')'
             );
         }

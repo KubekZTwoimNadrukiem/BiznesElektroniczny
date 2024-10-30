@@ -27,8 +27,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use PrestaShop\PrestaShop\Adapter\Presenter\Object\ObjectPresenter;
-use PrestaShop\PrestaShop\Core\Addon\Module\ModuleManagerBuilder;
+use PrestaShop\PrestaShop\Adapter\ObjectPresenter;
 use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 
 require_once _PS_MODULE_DIR_ . 'ps_customtext/classes/CustomText.php';
@@ -45,9 +44,8 @@ class Ps_Customtext extends Module implements WidgetInterface
     public function __construct()
     {
         $this->name = 'ps_customtext';
-        $this->tab = 'front_office_features';
         $this->author = 'PrestaShop';
-        $this->version = '4.2.1';
+        $this->version = '4.2.0';
         $this->need_instance = 0;
 
         $this->bootstrap = true;
@@ -58,7 +56,7 @@ class Ps_Customtext extends Module implements WidgetInterface
         $this->displayName = $this->trans('Custom text block', [], 'Modules.Customtext.Admin');
         $this->description = $this->trans('Give your visitors extra information, display a customized block of content on your homepage.', [], 'Modules.Customtext.Admin');
 
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '1.7.4.0', 'max' => _PS_VERSION_];
 
         $this->templateFile = 'module:ps_customtext/ps_customtext.tpl';
     }
@@ -69,9 +67,7 @@ class Ps_Customtext extends Module implements WidgetInterface
     public function install()
     {
         // Remove 1.6 equivalent module to avoid DB issues
-        $moduleManagerBuilder = ModuleManagerBuilder::getInstance();
-        $moduleManager = $moduleManagerBuilder->build();
-        if ($moduleManager->isInstalled(self::MODULE_16)) {
+        if (Module::isInstalled(self::MODULE_16)) {
             return $this->installFrom16Version();
         }
 
@@ -205,12 +201,6 @@ class Ps_Customtext extends Module implements WidgetInterface
 
         foreach ($languages as $lang) {
             $text[$lang['id_lang']] = (string) Tools::getValue('text_' . $lang['id_lang']);
-
-            if (!Configuration::get('PS_ALLOW_HTML_IFRAME') && preg_match('/<iframe.*src=\"(.*)\".*><\/iframe>/isU', $text[$lang['id_lang']])) {
-                $this->context->controller->errors[] = $this->trans('To use <iframe>, enable the feature in Shop Parameters > General', [], 'Admin.Notifications.Error');
-
-                return false;
-            }
         }
 
         $saved = true;
@@ -218,12 +208,7 @@ class Ps_Customtext extends Module implements WidgetInterface
             Shop::setContext(Shop::CONTEXT_SHOP, $shop);
             $info = new CustomText(Tools::getValue('id_info', 1));
             $info->text = $text;
-
-            try {
-                $saved = $saved && $info->save();
-            } catch (PrestaShopException $e) {
-                $saved = false;
-            }
+            $saved = $saved && $info->save();
         }
 
         return $saved;
@@ -318,17 +303,12 @@ class Ps_Customtext extends Module implements WidgetInterface
      * @param string|null $hookName
      * @param array $configuration
      *
-     * @return string|false
+     * @return string
      */
     public function renderWidget($hookName = null, array $configuration = [])
     {
         if (!$this->isCached($this->templateFile, $this->getCacheId('ps_customtext'))) {
-            $widgetVariables = $this->getWidgetVariables($hookName, $configuration);
-            if ($widgetVariables === false) {
-                return false;
-            }
-
-            $this->smarty->assign($widgetVariables);
+            $this->smarty->assign($this->getWidgetVariables($hookName, $configuration));
         }
 
         return $this->fetch($this->templateFile, $this->getCacheId('ps_customtext'));
@@ -338,21 +318,15 @@ class Ps_Customtext extends Module implements WidgetInterface
      * @param string|null $hookName
      * @param array $configuration
      *
-     * @return array<string, mixed>|false
+     * @return array<string, mixed>
      */
     public function getWidgetVariables($hookName = null, array $configuration = [])
     {
-        $idShop = (int) $this->context->shop->id;
-        $idInfo = CustomText::getCustomTextIdByShop($idShop);
-        if ($idInfo === false) {
-            return false;
-        }
-
-        $customText = new CustomText($idInfo, $this->context->language->id, $idShop);
+        $customText = new CustomText(1, (int) $this->context->language->id, (int) $this->context->shop->id);
         $objectPresenter = new ObjectPresenter();
         $data = $objectPresenter->present($customText);
         $data['id_lang'] = $this->context->language->id;
-        $data['id_shop'] = $idShop;
+        $data['id_shop'] = $this->context->shop->id;
         unset($data['id']);
 
         return ['cms_infos' => $data];

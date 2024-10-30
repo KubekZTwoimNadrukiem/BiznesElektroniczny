@@ -24,56 +24,6 @@ needs please refer to https://devdocs.prestashop.com/ for more information.
 Release Notes for PrestaShop 1.7
 
 ####################################
-#   v1.7.8.11 - (2023-12-13)
-####################################
-- Core:
-  - Improvement:
-    - #34820: Update prestashop modules for 1.7.8.11 (by @tleon)
-  - Bug fix:
-    - GHSA-XGPM-Q3MQ-46RQ: Some attribute not escaped in Validate::isCleanHTML method (by @matthieu-rolland)
-- Tests:
-  - Refactoring:
-    - #33988: Functional tests - Fix random error in 'FO > Quick view product' (by @nesrineabdmouleh)
-
-####################################
-#   v1.7.8.10 - (2023-07-19)
-####################################
-- Core:
-  - Improvement:
-    - GHSA-xw2r-f8xv-c8xp add missing html attributes (by @matthieu-rolland)
-  - Bug fix:
-    - #33028: Bump to mysql 8 in CI (by @lartist)
-- Back Office:
-  - Improvement:
-    - GHSA-gf46-prm4-56pc protect from writing files on server through SQL form (by @matthieu-rolland)
-- Tests:
-  - Improvement:
-    - #32893: Nightly : 1.7.8.x - Move to Github Actions (by @Progi1984)
-  - Bug fix:
-    - #33013: Nightly : Fixed mocha loader (1.7.8.x) (by @Progi1984)
-    - #32896: Fix github action runs on 1.7.8.x (by @boubkerbribri)
-  - Refactoring:
-    - #33231: Nightly : 1.7.8.x - Skip test for the issue 32914 (by @Progi1984)
-    - #32995: Functional tests - Fix random errors in the nightly 1.7.8.x (by @nesrineabdmouleh)
-
-####################################
-#   v1.7.8.9 - (2023-20-04)
-####################################
-- Back Office:
-  - Improvement:
-    - #32140: Fix CVE 2023-25170 on 1.7.8.x (by @mflasquin)
-    - #32105: Release/manual verifications 1789 (by @mflasquin)
-  - Bug fix:
-    - #GHSA-8r4m-5p6p-52rp Fix arbitrary file ready through sql manager (found by truff@projet7.org / Sébastien Cantos)
-- Core:
-  - Improvement:
-    - #GHSA-fh7r-996q-gvcp: Possible XSS injection through Validate::isCleanHTML method (by @	matthieu-rolland)
-    - #GHSA-p379-cxqh-q822 Fix executeS method making sure it does selection only (found by truff@projet7.org / Sébastien Cantos)
-- Tests:
-  - Improvement:
-    - #32144: Nightly : Migrate from nightly.prestashop.com to nightly.prestashop-project.org (by @Progi1984)
-
-####################################
 #   v1.7.8.8 - (2022-12-07)
 ####################################
 - Back Office:
@@ -6920,3 +6870,4 @@ Release Notes for PrestaShop 1.7
 #   v1.7.0.0 - (2016-11-03)
 ####################################
   New Release!
+

@@ -40,17 +40,25 @@ class dashtrends extends Module
      */
     public $currency;
 
+    /**
+     * @var string
+     */
+    public $push_filename;
+
     public function __construct()
     {
         $this->name = 'dashtrends';
-        $this->tab = 'administration';
-        $this->version = '2.1.3';
+        $this->tab = 'dashboard';
+        $this->version = '2.0.3';
         $this->author = 'PrestaShop';
+
+        $this->push_filename = _PS_CACHE_DIR_ . 'push/trends';
+        $this->allow_push = true;
 
         parent::__construct();
         $this->displayName = $this->trans('Dashboard Trends', [], 'Modules.Dashtrends.Admin');
-        $this->description = $this->trans('Enrich your dashboard: display a graphical representation of your store’s development.', [], 'Modules.Dashtrends.Admin');
-        $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => _PS_VERSION_];
+        $this->description = $this->trans('Adds a block with a graphical representation of the development of your store(s) based on selected key data.', [], 'Modules.Dashtrends.Admin');
+        $this->ps_versions_compliancy = ['min' => '1.7.1.0', 'max' => _PS_VERSION_];
     }
 
     public function install()
@@ -59,6 +67,7 @@ class dashtrends extends Module
             && $this->registerHook('dashboardZoneTwo')
             && $this->registerHook('dashboardData')
             && $this->registerHook('actionAdminControllerSetMedia')
+            && $this->registerHook('actionOrderStatusPostUpdate')
         ;
     }
 
@@ -73,6 +82,7 @@ class dashtrends extends Module
     {
         $this->context->smarty->assign([
             'currency' => $this->context->currency,
+            '_PS_PRICE_DISPLAY_PRECISION_' => _PS_PRICE_DISPLAY_PRECISION_,
         ]);
 
         return $this->display(__FILE__, 'dashboard_zone_two.tpl');
@@ -104,7 +114,7 @@ class dashtrends extends Module
         } else {
             $tmp_data['visits'] = AdminStatsController::getVisits(false, $date_from, $date_to, 'day');
             $tmp_data['orders'] = AdminStatsController::getOrders($date_from, $date_to, 'day');
-            $tmp_data['total_paid_tax_excl'] = $this->getTotalSalesWithRefunds($date_from, $date_to, 'day');
+            $tmp_data['total_paid_tax_excl'] = AdminStatsController::getTotalSales($date_from, $date_to, 'day');
             $tmp_data['total_purchases'] = AdminStatsController::getPurchases($date_from, $date_to, 'day');
             $tmp_data['total_expenses'] = AdminStatsController::getExpenses($date_from, $date_to, 'day');
         }
@@ -224,21 +234,21 @@ class dashtrends extends Module
             $this->dashboard_data_compare = $this->translateCompareData($this->dashboard_data, $this->dashboard_data_compare);
         }
 
-        $sales_score = $this->context->getCurrentLocale()->formatPrice($this->dashboard_data_sum['sales'], $this->context->currency->iso_code) .
+        $sales_score = Tools::displayPrice($this->dashboard_data_sum['sales'], $this->currency) .
                        $this->addTaxSuffix();
 
-        $cart_value_score = $this->context->getCurrentLocale()->formatPrice($this->dashboard_data_sum['average_cart_value'], $this->context->currency->iso_code) .
+        $cart_value_score = Tools::displayPrice($this->dashboard_data_sum['average_cart_value'], $this->currency) .
                             $this->addTaxSuffix();
 
-        $net_profit_score = $this->context->getCurrentLocale()->formatPrice($this->dashboard_data_sum['net_profits'], $this->context->currency->iso_code) .
+        $net_profit_score = Tools::displayPrice($this->dashboard_data_sum['net_profits'], $this->currency) .
                             $this->addTaxSuffix();
 
         return [
             'data_value' => [
                 'sales_score' => $sales_score,
-                'orders_score' => $this->context->getCurrentLocale()->formatNumber($this->dashboard_data_sum['orders']),
+                'orders_score' => Tools::displayNumber($this->dashboard_data_sum['orders']),
                 'cart_value_score' => $cart_value_score,
-                'visits_score' => $this->context->getCurrentLocale()->formatNumber($this->dashboard_data_sum['visits']),
+                'visits_score' => Tools::displayNumber($this->dashboard_data_sum['visits']),
                 'conversion_rate_score' => round(100 * $this->dashboard_data_sum['conversion_rate'], 2) . '%',
                 'net_profits_score' => $net_profit_score,
             ],
@@ -270,7 +280,7 @@ class dashtrends extends Module
 
             $translated_array[$key] = [];
             foreach ($date_array as $compare_date => $value) {
-                $translation = $compare_size == 0 ? 0 : $normal_min + ($compare_date - $compare_min) * ($normal_size / $compare_size);
+                $translation = $normal_min + ($compare_date - $compare_min) * ($normal_size / $compare_size);
                 $translated_array[$key][number_format($translation, 0, '', '')] = $value;
             }
         }
@@ -347,85 +357,8 @@ class dashtrends extends Module
         return $data;
     }
 
-    /**
-     * @param string $date_from
-     * @param string $date_to
-     * @param string|bool $granularity
-     *
-     * @return array|false|string
-     *
-     * @throws PrestaShopDatabaseException
-     */
-    protected function getTotalSalesWithRefunds($date_from, $date_to, $granularity = false)
+    public function hookActionOrderStatusPostUpdate($params)
     {
-        $sales = AdminStatsController::getTotalSales($date_from, $date_to, $granularity);
-
-        $refunds = $this->getRefunds($date_from, $date_to, $granularity);
-        if (!$granularity) {
-            return $sales - $refunds;
-        }
-
-        foreach ($sales as $key => $value) {
-            if (!isset($refunds[$key])) {
-                continue;
-            }
-            $sales[$key] -= $refunds[$key];
-        }
-
-        return $sales;
-    }
-
-    /**
-     * @param string $date_from
-     * @param string $date_to
-     * @param string|bool $granularity
-     *
-     * @return array|false|string
-     *
-     * @throws PrestaShopDatabaseException
-     */
-    protected function getRefunds($date_from, $date_to, $granularity = false)
-    {
-        $restriction = Shop::addSqlRestriction(false, 'o');
-        $sqlRefunds = 'SELECT'
-            . (($granularity == 'day' || $granularity == 'month') ? ' LEFT(o.invoice_date, ' . ($granularity == 'day' ? 10 : 7) . ') AS date,' : '')
-            . ' SUM((ps.total_products_tax_excl - ps.total_shipping_tax_excl) / ps.conversion_rate) AS orderSlips'
-            . ' FROM `' . _DB_PREFIX_ . 'orders` o'
-            . ' INNER JOIN `' . _DB_PREFIX_ . 'order_slip` ps ON o.id_order = ps.id_order'
-            . ' LEFT JOIN `' . _DB_PREFIX_ . 'order_state` os ON o.current_state = os.id_order_state'
-            . ' WHERE o.invoice_date BETWEEN "' . pSQL($date_from) . ' 00:00:00" AND "' . pSQL($date_to) . ' 23:59:59" AND os.logable = 1'
-            . $restriction
-            . (($granularity == 'day' || $granularity == 'month') ? 'GROUP BY LEFT(o.invoice_date, ' . ($granularity == 'day' ? 10 : 7) . ')' : '')
-        ;
-        $refunds = [];
-
-        if ($granularity == 'day') {
-            /* @phpstan-ignore-next-line */
-            $result = DB::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sqlRefunds);
-            foreach ($result as $row) {
-                if (!isset($refunds[strtotime($row['date'])])) {
-                    $refunds[strtotime($row['date'])] = 0;
-                }
-                $refunds[strtotime($row['date'])] += $row['orderSlips'];
-            }
-
-            return $refunds;
-        }
-
-        if ($granularity == 'month') {
-            /* @phpstan-ignore-next-line */
-            $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sqlRefunds);
-            foreach ($result as $row) {
-                if (!isset($refunds[strtotime($row['date'] . '-01')])) {
-                    $refunds[strtotime($row['date'] . '-01')] = 0;
-                }
-                $refunds[strtotime($row['date'] . '-01')] += $row['orderSlips'];
-            }
-
-            return $refunds;
-        }
-
-        /* @phpstan-ignore-next-line */
-        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sqlRefunds);
+        Tools::changeFileMTime($this->push_filename);
     }
 }
