@@ -1,10 +1,12 @@
-# Yarnstreet.com copy
+# Kopia strony Yarnstreet.com
 
-# Installation steps
-1. Copy repository.
-2. Use `docker-compose up` inside of the build folder.
-3. Use the following commands:
+# Kroki instalacyjne
+1. Sklonuj repozytorium.
+2. Skopiuj *docker-compose.override.yml.example* bez końcowego '.example' i zmień wartości w środku zgodnie ze swoim środowiskiem.
+3. Użyj komendy `docker-compose up` w środku folderu 'build'.
+4. Użyj następujących komend:
 ```
 docker exec -it nadruk-prestashop chown -R www-data:www-data /var/www/html/
-docker exec -it <prestashop_container_name> chmod -R 755 /var/www/html/
+docker exec -it nadruk-prestashop chmod -R 755 /var/www/html/
 ```
+5. Środowisko powinno być gotowe.
