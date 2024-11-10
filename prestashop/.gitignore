@@ -11,8 +11,8 @@ download/*
 /img/*
 /log/*
 /upload/*
-/vendor/*
-!/vendor/.htaccess
+#/vendor/*
+#!/vendor/.htaccess
 docs/phpdoc-sf/
 composer.lock
 tests/Selenium/errorShots/
