@@ -9,7 +9,7 @@ services:
       # potrzeby bezposredniej interakcji
       - 3306:3306
     volumes:
-      - [/home/user/Documents/code/business/db]:/var/lib/mariadb
+      - [/home/user/Documents/code/business/db]:/var/lib/mysql
 
   nadruk-prestashop:
     ports:

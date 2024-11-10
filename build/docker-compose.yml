@@ -1,13 +1,13 @@
 services:
   nadruk-mariadb:
     container_name: nadruk-mariadb
-    image: mariadb:10
+    image: mysql:8.0
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: root_password
-      MARIADB_DATABASE: prestashop
-      MARIADB_USER: yarn_user
-      MARIADB_PASSWORD: yarn_password
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: prestashop
+      MYSQL_USER: yarn_user
+      MYSQL_PASSWORD: yarn_password
     networks:
       - kubek-z-twoim-nadrukiem
 
