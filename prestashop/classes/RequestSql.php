@@ -59,13 +59,12 @@ class RequestSqlCore extends ObjectModel
         ],
         'unauthorized' => [
             'DELETE', 'ALTER', 'INSERT', 'REPLACE', 'CREATE', 'TRUNCATE', 'OPTIMIZE', 'GRANT', 'REVOKE', 'SHOW', 'HANDLER',
-            'LOAD', 'LOAD_FILE', 'ROLLBACK', 'SAVEPOINT', 'UNLOCK', 'INSTALL', 'UNINSTALL', 'ANALZYE', 'BACKUP', 'CHECK', 'CHECKSUM', 'REPAIR', 'RESTORE', 'CACHE',
+            'LOAD', 'ROLLBACK', 'SAVEPOINT', 'UNLOCK', 'INSTALL', 'UNINSTALL', 'ANALZYE', 'BACKUP', 'CHECK', 'CHECKSUM', 'REPAIR', 'RESTORE', 'CACHE',
             'DESCRIBE', 'EXPLAIN', 'USE', 'HELP', 'SET', 'DUPLICATE', 'VALUES',  'INTO', 'RENAME', 'CALL', 'PROCEDURE',  'FUNCTION', 'DATABASE', 'SERVER',
             'LOGFILE', 'DEFINER', 'RETURNS', 'EVENT', 'TABLESPACE', 'VIEW', 'TRIGGER', 'DATA', 'DO', 'PASSWORD', 'USER', 'PLUGIN', 'FLUSH', 'KILL',
             'RESET', 'START', 'STOP', 'PURGE', 'EXECUTE', 'PREPARE', 'DEALLOCATE', 'LOCK', 'USING', 'DROP', 'FOR', 'UPDATE', 'BEGIN', 'BY', 'ALL', 'SHARE',
             'MODE', 'TO', 'KEY', 'DISTINCTROW', 'DISTINCT',  'HIGH_PRIORITY', 'LOW_PRIORITY', 'DELAYED', 'IGNORE', 'FORCE', 'STRAIGHT_JOIN',
             'SQL_SMALL_RESULT', 'SQL_BIG_RESULT', 'QUICK', 'SQL_BUFFER_RESULT', 'SQL_CACHE', 'SQL_NO_CACHE', 'SQL_CALC_FOUND_ROWS', 'WITH',
-            'OUTFILE', 'DUMPFILE',
         ],
     ];
 
@@ -484,15 +483,6 @@ class RequestSqlCore extends ObjectModel
                             return false;
                         }
                     }
-                }
-
-                while (is_array($attribut['sub_tree'])) {
-                    if ($attribut['expr_type'] === 'function' && in_array(strtoupper($attribut['base_expr']), $this->tested['unauthorized'])) {
-                        $this->error_sql['checkedSelect']['function'] = $attribut['base_expr'];
-
-                        return false;
-                    }
-                    $attribut = $attribut['sub_tree'][0];
                 }
             } elseif ($in) {
                 $this->error_sql['checkedSelect']['*'] = false;

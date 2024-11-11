@@ -24,11 +24,11 @@
 *}
 
 <div class="currency-selector">
-  <span>{$current_currency.iso_code}{if $current_currency.sign !== $current_currency.iso_code} {$current_currency.sign}{/if}</span>
+  <span>{$current_currency.iso_code} {$current_currency.sign}</span>
   <ul>
     {foreach from=$currencies item=currency}
       <li {if $currency.current} class="current" {/if}>
-        <a rel="nofollow" href="{$currency.url}">{$currency.iso_code}{if $currency.sign !== $currency.iso_code} {$currency.sign}{/if}</a>
+        <a rel="nofollow" href="{$currency.url}">{$currency.iso_code} {$currency.sign}</a>
       </li>
     {/foreach}
   </ul>

@@ -23,7 +23,7 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
 
-<section id="dashproducts" class="panel widget">
+<section id="dashproducts" class="panel widget {if $allow_push} allow_push{/if}">
   <header class="panel-heading">
     <i class="icon-bar-chart"></i> {l s='Products and Sales' d='Modules.Dashproducts.Admin'}
     <span class="panel-heading-action">
@@ -77,9 +77,7 @@
 
     <div class="tab-content panel">
       <div class="tab-pane active" id="dash_recent_orders">
-        <div class="panel-heading">
-          {l s='Last %d orders' sprintf=$DASHPRODUCT_NBR_SHOW_LAST_ORDER|intval d='Modules.Dashproducts.Admin'}
-        </div>
+        <h3>{l s='Last %d orders' sprintf=$DASHPRODUCT_NBR_SHOW_LAST_ORDER|intval d='Modules.Dashproducts.Admin'}</h3>
         <div class="table-responsive">
           <table class="table data_table" id="table_recent_orders">
             <thead></thead>
@@ -88,10 +86,10 @@
         </div>
       </div>
       <div class="tab-pane" id="dash_best_sellers">
-        <div class="panel-heading">
+        <h3>
           {l s='Top %d products' sprintf=$DASHPRODUCT_NBR_SHOW_BEST_SELLER|intval d='Modules.Dashproducts.Admin'}
           <span>{l s="From" d='Modules.Dashproducts.Admin'} {$date_from|escape:'htmlall':'UTF-8'} {l s="to" d='Modules.Dashproducts.Admin'} {$date_to|escape:'htmlall':'UTF-8'}</span>
-        </div>
+        </h3>
         <div class="table-responsive">
           <table class="table data_table" id="table_best_sellers">
             <thead></thead>
@@ -100,10 +98,10 @@
         </div>
       </div>
       <div class="tab-pane" id="dash_most_viewed">
-        <div class="panel-heading">
+        <h3>
           {l s="Most Viewed" d='Modules.Dashproducts.Admin'}
           <span>{l s="From" d='Modules.Dashproducts.Admin'} {$date_from|escape:'htmlall':'UTF-8'} {l s="to" d='Modules.Dashproducts.Admin'} {$date_to|escape:'htmlall':'UTF-8'}</span>
-        </div>
+        </h3>
         <div class="table-responsive">
           <table class="table data_table" id="table_most_viewed">
             <thead></thead>
@@ -112,10 +110,10 @@
         </div>
       </div>
       <div class="tab-pane" id="dash_top_search">
-        <div class="panel-heading">
+        <h3>
           {l s='Top %d most search terms' sprintf=$DASHPRODUCT_NBR_SHOW_TOP_SEARCH|intval d='Modules.Dashproducts.Admin'}
           <span>{l s="From" d='Modules.Dashproducts.Admin'} {$date_from|escape:'htmlall':'UTF-8'} {l s="to" d='Modules.Dashproducts.Admin'} {$date_to|escape:'htmlall':'UTF-8'}</span>
-        </div>
+        </h3>
         <div class="table-responsive">
           <table class="table data_table" id="table_top_10_most_search">
             <thead></thead>

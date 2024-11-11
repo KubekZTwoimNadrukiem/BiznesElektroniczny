@@ -2,7 +2,7 @@
 # https://gist.github.com/prestarocket/7870db5cbba8b841faf08563e11c0249
 # Cache, temp and personal files
 
-/.htaccess
+#/.htaccess
 *.log
 npm-debug.log.*
 .sass-cache/
@@ -11,8 +11,8 @@ download/*
 /img/*
 /log/*
 /upload/*
-/vendor/*
-!/vendor/.htaccess
+#/vendor/*
+#!/vendor/.htaccess
 docs/phpdoc-sf/
 composer.lock
 tests/Selenium/errorShots/
@@ -30,7 +30,7 @@ themes/*/cache/*
 
 # Config
 
-config/settings.inc.php
+#config/settings.inc.php
 config/settings.old.php
 config/xml/*
 config/themes/*
@@ -86,8 +86,8 @@ themes/default-bootstrap/modules/*/mails/*
 !/app/Resources/translations/default
 /app/test/cache/*
 !app/test/cache/.gitkeep
-/app/config/parameters.yml
-/app/config/parameters.php
+#/app/config/parameters.yml
+#/app/config/parameters.php
 /app/logs/*
 !app/logs/.gitkeep
 /app/phpunit.xml

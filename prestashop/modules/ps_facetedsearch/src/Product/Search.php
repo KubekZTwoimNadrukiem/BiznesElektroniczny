@@ -27,13 +27,11 @@ use FrontController;
 use Group;
 use PrestaShop\Module\FacetedSearch\Adapter\AbstractAdapter;
 use PrestaShop\Module\FacetedSearch\Adapter\MySQL as MySQLAdapter;
-use PrestaShop\Module\FacetedSearch\Definition\Availability;
-use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
+use Tools;
 
 class Search
 {
     const STOCK_MANAGEMENT_FILTER = 'with_stock_management';
-    const HIGHLIGHTS_FILTER = 'extras';
 
     /**
      * @var bool
@@ -54,11 +52,6 @@ class Search
      * @var Context
      */
     protected $context;
-
-    /**
-     * @var ProductSearchQuery
-     */
-    protected $query;
 
     /**
      * Search constructor.
@@ -94,56 +87,56 @@ class Search
     }
 
     /**
-     * @return ProductSearchQuery
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
-
-    /**
-     * @param ProductSearchQuery $query
-     *
-     * @return $this
-     */
-    public function setQuery(ProductSearchQuery $query)
-    {
-        $this->query = $query;
-
-        return $this;
-    }
-
-    /**
      * Init the initial population of the search filter
      *
      * @param array $selectedFilters
      */
     public function initSearch($selectedFilters)
     {
-        // Adds basic filters that are common for every search, like shop and group limitations
-        $this->addCommonFilters();
+        $homeCategory = Configuration::get('PS_HOME_CATEGORY');
+        /* If the current category isn't defined or if it's homepage, we have nothing to display */
+        $idParent = (int) Tools::getValue(
+            'id_category',
+            Tools::getValue('id_category_layered', $homeCategory)
+        );
 
-        // Add filters that the user has selected for current query
-        $this->addSearchFilters($selectedFilters);
+        $parent = new Category((int) $idParent);
 
-        // Adds filters that specific for this controller
-        $this->addControllerSpecificFilters();
+        $psLayeredFullTree = Configuration::get('PS_LAYERED_FULL_TREE');
+        if (!$psLayeredFullTree) {
+            $this->addFilter('id_category', [$parent->id]);
+        }
 
-        // Add group by to remove duplicate values
-        $this->getSearchAdapter()->addGroupBy('id_product');
+        $psLayeredFilterByDefaultCategory = Configuration::get('PS_LAYERED_FILTER_BY_DEFAULT_CATEGORY');
+        if ($psLayeredFilterByDefaultCategory) {
+            $this->addFilter('id_category_default', [$parent->id]);
+        }
 
-        // Move the current search into the "initialPopulation"
-        // This initialPopulation will be used to generate the base table in the final query
-        $this->getSearchAdapter()->useFiltersAsInitialPopulation();
+        // Visibility of a product must be in catalog or both (search & catalog)
+        $this->addFilter('visibility', ['both', 'catalog']);
+
+        // User must belong to one of the groups that can access the product
+        if (Group::isFeatureActive()) {
+            $groups = FrontController::getCurrentCustomerGroups();
+
+            $this->addFilter('id_group', empty($groups) ? [Group::getCurrent()->id] : $groups);
+        }
+
+        $this->addSearchFilters(
+            $selectedFilters,
+            $psLayeredFullTree ? $parent : null,
+            (int) $this->context->shop->id
+        );
     }
 
     /**
-     * Adds filters that the user has specifically selected for current query
-     *
      * @param array $selectedFilters
+     * @param Category $parent
+     * @param int $idShop
      */
-    private function addSearchFilters($selectedFilters)
+    private function addSearchFilters($selectedFilters, $parent, $idShop)
     {
+        $hasCategory = false;
         foreach ($selectedFilters as $key => $filterValues) {
             if (!count($filterValues)) {
                 continue;
@@ -172,44 +165,11 @@ class Search
 
                 case 'category':
                     $this->addFilter('id_category', $filterValues);
+                    $this->getSearchAdapter()->resetFilter('id_category_default');
+                    $hasCategory = true;
                     break;
 
-                case 'extras':
-                    // Filter for new products
-                    if (in_array('new', $filterValues)) {
-                        $timeCondition = date(
-                            'Y-m-d 00:00:00',
-                            strtotime(
-                                ((int) Configuration::get('PS_NB_DAYS_NEW_PRODUCT') > 0 ?
-                                '-' . ((int) Configuration::get('PS_NB_DAYS_NEW_PRODUCT') - 1) . ' days' :
-                                '+ 1 days')
-                            )
-                        );
-                        // Reset filter to prevent two same filters if we are on new products page
-                        $this->getSearchAdapter()->addFilter('date_add', ["'" . $timeCondition . "'"], '>');
-                    }
-
-                    // Filter for discounts - they must work as OR
-                    $operationsFilter = [];
-                    if (in_array('discount', $filterValues)) {
-                        $operationsFilter[] = [
-                            ['reduction', [0], '>'],
-                        ];
-                    }
-                    if (in_array('sale', $filterValues)) {
-                        $operationsFilter[] = [
-                            ['on_sale', [1], '='],
-                        ];
-                    }
-                    if (!empty($operationsFilter)) {
-                        $this->getSearchAdapter()->addOperationsFilter(
-                            self::HIGHLIGHTS_FILTER,
-                            $operationsFilter
-                        );
-                    }
-                    break;
-
-                case 'availability':
+                case 'quantity':
                     /*
                     * $filterValues options can have following values:
                     * 0 - Not available - 0 or less quantity and disabled backorders
@@ -232,13 +192,13 @@ class Search
                     // Simple cases with 1 option selected
                     if (count($filterValues) == 1) {
                         // Not available
-                        if ($filterValues[0] == Availability::NOT_AVAILABLE) {
+                        if ($filterValues[0] == 0) {
                             $operationsFilter[] = [
                                 ['quantity', [0], '<='],
                                 ['out_of_stock', $this->psOrderOutOfStock ? [0] : [0, 2], '='],
                             ];
                         // Available
-                        } elseif ($filterValues[0] == Availability::AVAILABLE) {
+                        } elseif ($filterValues[0] == 1) {
                             $operationsFilter[] = [
                                 ['out_of_stock', $this->psOrderOutOfStock ? [1, 2] : [1], '='],
                             ];
@@ -246,7 +206,7 @@ class Search
                                 ['quantity', [0], '>'],
                             ];
                         // In stock
-                        } elseif ($filterValues[0] == Availability::IN_STOCK) {
+                        } elseif ($filterValues[0] == 2) {
                             $operationsFilter[] = [
                                 ['quantity', [0], '>'],
                             ];
@@ -254,10 +214,10 @@ class Search
                         // Cases with 2 options selected
                     } elseif (count($filterValues) == 2) {
                         // Not available and available, we show everything
-                        if (in_array(Availability::NOT_AVAILABLE, $filterValues) && in_array(Availability::AVAILABLE, $filterValues)) {
+                        if (in_array(0, $filterValues) && in_array(1, $filterValues)) {
                             break;
                         // Not available or in stock
-                        } elseif (in_array(Availability::NOT_AVAILABLE, $filterValues) && in_array(Availability::IN_STOCK, $filterValues)) {
+                        } elseif (in_array(0, $filterValues) && in_array(2, $filterValues)) {
                             $operationsFilter[] = [
                                 ['quantity', [0], '<='],
                                 ['out_of_stock', $this->psOrderOutOfStock ? [0] : [0, 2], '='],
@@ -266,7 +226,7 @@ class Search
                                 ['quantity', [0], '>'],
                             ];
                         // Available or in stock
-                        } elseif (in_array(Availability::AVAILABLE, $filterValues) && in_array(Availability::IN_STOCK, $filterValues)) {
+                        } elseif (in_array(1, $filterValues) && in_array(2, $filterValues)) {
                             $operationsFilter[] = [
                                 ['out_of_stock', $this->psOrderOutOfStock ? [1, 2] : [1], '='],
                             ];
@@ -322,134 +282,16 @@ class Search
                     break;
             }
         }
-    }
 
-    /**
-     * Adds filters that are common for every search
-     */
-    private function addCommonFilters()
-    {
-        // Setting proper shop
-        $this->getSearchAdapter()->addFilter('id_shop', [(int) $this->context->shop->id]);
-
-        // Visibility of a product must be in catalog or both (search & catalog)
-        $this->addFilter('visibility', ['both', 'catalog']);
-
-        // User must belong to one of the groups that can access the product
-        // (Actually it's categories that define access to a product, user must have access to at least
-        // one category the product is assigned to.)
-        if (Group::isFeatureActive()) {
-            $groups = FrontController::getCurrentCustomerGroups();
-            $this->addFilter('id_group', empty($groups) ? [Group::getCurrent()->id] : $groups);
-        }
-    }
-
-    /**
-     * Adds filters that specific for category page
-     */
-    private function addControllerSpecificFilters()
-    {
-        // Category page
-        if ($this->query->getQueryType() == 'category') {
-            // We check if some specific filter of this type wasn't added before by the customer
-            if (!empty($this->getSearchAdapter()->getFilter('id_category'))) {
-                return;
-            }
-
-            // Get category ID from the query or home category as a fallback
-            $idCategory = (int) $this->query->getIdCategory();
-            if (empty($idCategory)) {
-                $idCategory = (int) Configuration::get('PS_HOME_CATEGORY');
-            }
-            $category = new Category((int) $idCategory);
-
-            // If we want to display only products from this category AND not it's subcategories,
-            // we add this one specific category ID, otherwise, we will add everything using nleft and nright
-            if (Configuration::get('PS_LAYERED_FULL_TREE')) {
-                $this->getSearchAdapter()->addFilter('nleft', [$category->nleft], '>=');
-                $this->getSearchAdapter()->addFilter('nright', [$category->nright], '<=');
-            } else {
-                $this->addFilter('id_category', [$idCategory]);
-            }
-
-            // If we want to display products, which have this category as their default category
-            if (Configuration::get('PS_LAYERED_FILTER_BY_DEFAULT_CATEGORY')) {
-                $this->addFilter('id_category_default', [$idCategory]);
-            }
+        if (!$hasCategory && $parent !== null) {
+            $this->getSearchAdapter()->addFilter('nleft', [$parent->nleft], '>=');
+            $this->getSearchAdapter()->addFilter('nright', [$parent->nright], '<=');
         }
 
-        // Manufacturer controller
-        if ($this->query->getQueryType() == 'manufacturer') {
-            $this->getSearchAdapter()->addFilter('id_manufacturer', [$this->query->getIdManufacturer()]);
-        }
+        $this->getSearchAdapter()->addFilter('id_shop', [$idShop]);
+        $this->getSearchAdapter()->addGroupBy('id_product');
 
-        // Supplier controller
-        if ($this->query->getQueryType() == 'supplier') {
-            $this->getSearchAdapter()->addFilter('id_supplier', [$this->query->getIdSupplier()]);
-        }
-
-        /*
-         * New products controller
-         *
-         * Comparsion works works on a day basis, not 24 hours.
-         * If you set 1 day, only products created TODAY will be new.
-         * If there is a zero set to disable this feature, it creates unreachable condition.
-         */
-        if ($this->query->getQueryType() == 'new-products') {
-            // We check if some specific filter of this type wasn't added before
-            if (!empty($this->getSearchAdapter()->getFilter('date_add'))) {
-                return;
-            }
-
-            $timeCondition = date(
-                'Y-m-d 00:00:00',
-                strtotime(
-                    ((int) Configuration::get('PS_NB_DAYS_NEW_PRODUCT') > 0 ?
-                    '-' . ((int) Configuration::get('PS_NB_DAYS_NEW_PRODUCT') - 1) . ' days' :
-                    '+ 1 days')
-                )
-            );
-            $this->getSearchAdapter()->addFilter('date_add', ["'" . $timeCondition . "'"], '>');
-        }
-
-        /*
-         * Bestsellers controller
-         *
-         * We are selecting all products from product_sale table.
-         */
-        if ($this->query->getQueryType() == 'best-sales') {
-            $this->getSearchAdapter()->addFilter('sales', [0], '>');
-        }
-
-        /*
-         * Prices drop controller
-         *
-         * We are selecting products that have a specific price created meeting certain conditions.
-         */
-        if ($this->query->getQueryType() == 'prices-drop') {
-            // We check if some specific filter of this type wasn't added before
-            if (!empty($this->getSearchAdapter()->getFilter('reduction'))) {
-                return;
-            }
-
-            $this->getSearchAdapter()->addFilter('reduction', [0], '>');
-        }
-
-        /*
-         * Search controller
-         *
-         * We are using a fast backport to get a product pool, which is then passed to the query.
-         * Core search provider does simmilar thing. If nothing is found, we return a value
-         * (NULL string) that will ensure empty result. It would be better to stop the search
-         * sooner in the logic, in the future.
-         */
-        if ($this->query->getQueryType() == 'search') {
-            $productPool = (new CoreSearchBackport())->getProductPool($this->query);
-            $this->getSearchAdapter()->addFilter(
-                'id_product',
-                empty($productPool) ? ['NULL'] : $productPool
-            );
-        }
+        $this->getSearchAdapter()->useFiltersAsInitialPopulation();
     }
 
     /**

@@ -55,7 +55,7 @@ class Ps_CheckpaymentValidationModuleFrontController extends ModuleFrontControll
         }
 
         if (!$authorized) {
-            exit($this->trans('This payment method is not available.', [], 'Modules.Checkpayment.Shop'));
+            die($this->trans('This payment method is not available.', [], 'Modules.Checkpayment.Shop'));
         }
 
         $customer = new Customer($cart->id_customer);

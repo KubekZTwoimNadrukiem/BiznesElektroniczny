@@ -26,7 +26,6 @@
     <input type="hidden" name="id_layered_filter" id="id_layered_filter" value="{$id_layered_filter}" />
 
     {include file='./_partials/header.tpl'}
-    {include file='./_partials/controllers.tpl'}
     {include file='./_partials/categories-tree.tpl'}
     {include file='./_partials/shops.tpl'}
 
@@ -47,7 +46,7 @@
             </span>
           </header>
           <section class="filter_list">
-            <ul class="list-unstyled sortable" id="list-filters">
+            <ul id="" class="list-unstyled sortable">
 
               {foreach from=$default_filters item=filter key=filterId}
                 <li class="filter_list_item row" draggable="true">

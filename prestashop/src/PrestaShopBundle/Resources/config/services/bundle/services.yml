@@ -114,8 +114,3 @@ services:
     PrestaShopBundle\DependencyInjection\RuntimeConstEnvVarProcessor:
         public: false
         tags: ['container.env_var_processor']
-
-    PrestaShopBundle\Security\Admin\SessionRenewer:
-        arguments:
-            $storage: "@security.csrf.token_storage"
-        autowire: true
