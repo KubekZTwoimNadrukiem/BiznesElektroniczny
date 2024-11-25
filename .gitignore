@@ -1,5 +1,4 @@
-### Docker Compose ###
-docker-compose.override.yml
-
-### Database ###
-#/db
+.vscode/
+target/
+chromedriver
+.DS_Store
