@@ -38,7 +38,8 @@ public function install()
    return (
         parent::install()
 	&& $this->registerHook('footerBefore')
-	&& $this->registerHook('footerBeforeBefore')
+	&& $this->registerHook('home')
+	&& $this->registerHook('reassurrance')
         && Configuration::updateValue('YARN_ASSURANCE_NAME', 'yarn_assurance')
     );
 }
@@ -62,7 +63,18 @@ public function hookDisplayFooterBefore($params)
   return $this->display(__FILE__, 'yarn_assurance.tpl');
 }
 
-public function hookDisplayFooterBeforeBefore($params)
+public function hookDisplayHome($params)
+{
+  $this->context->smarty->assign(
+      array(
+          'yarn_assurance_name' => Configuration::get('YARN_ASSURANCE_NAME'),
+          'yarn_assurance_link' => $this->context->link->getModuleLink('yarn_assurance', 'display')
+      )
+  );
+  return $this->display(__FILE__, 'yarn_assurance.tpl');
+}
+
+public function hookDisplayReassurance($params)
 {
   $this->context->smarty->assign(
       array(

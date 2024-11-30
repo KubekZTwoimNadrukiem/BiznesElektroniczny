@@ -22,20 +22,21 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  *}
+
+<div id="footer-assurance">
 <div class="container">
-  <div class="row">
-    {block name='hook_footer_before_before'}
-      {hook h='displayFooterBeforeBefore'}
-    {/block}
-  </div>
+    <div class="row">
+	{hook h='displayReassurance' mod='yarn_assurance'}
+    </div>
 </div>
-<div class="container">
+</div>
+
+<div class="container" id="footer-main">
   <div class="row">
     {block name='hook_footer_before'}
       {hook h='displayFooterBefore'}
     {/block}
   </div>
-</div>
 <div class="footer-container">
   <div class="container">
     <div class="row">
@@ -48,16 +49,28 @@
         {hook h='displayFooterAfter'}
       {/block}
     </div>
-    <div class="row">
-      <div class="col-md-12">
-        <p class="text-sm-center">
-          {block name='copyright_link'}
-            <a href="https://www.prestashop.com" target="_blank" rel="noopener noreferrer nofollow">
-              {l s='%copyright% %year% - Ecommerce software by %prestashop%' sprintf=['%prestashop%' => 'PrestaShop™', '%year%' => 'Y'|date, '%copyright%' => '©'] d='Shop.Theme.Global'}
-            </a>
-          {/block}
-        </p>
-      </div>
-    </div>
   </div>
+</div>
+</div>
+
+<div id="footer-copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="copyright-text">
+					<p>
+						Copyright © 2024
+						<a href="https://www.yarnstreet.com">Yarnstreet</a>
+					</p>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="copyright-text ">
+					<p class='text-sm-right'>
+						{l s='Recreated by:' d='Shop.Theme.Yarn'} KubekZTwoimNadrukiem
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

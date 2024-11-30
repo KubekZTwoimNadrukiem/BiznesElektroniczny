@@ -25,6 +25,7 @@
 <div id="_desktop_contact_link">
   <div id="contact-link">
     {if $contact_infos.email && $display_email}
+	<i class="material-icons">mail</i>
 	<a href='mailto:{$contact_infos.email}'>
 		E-mail: {$contact_infos.email}
 	</a>
