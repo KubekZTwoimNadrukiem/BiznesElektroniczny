@@ -4,3 +4,9 @@ venv/
 
 # Ignore Python cache
 __pycache__/
+
+# Ignore downloaded images
+images/
+
+# Ignore saved results
+results/
