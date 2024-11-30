@@ -1,0 +1,288 @@
+a {
+	transition: all 0.3s ease 0s;
+    	text-decoration: none;
+}
+
+
+
+
+
+#header .header-nav {
+	background: #f9f9f9 none repeat scroll 0 0;
+	border-bottom: 1px solid #e9e9e9;
+}
+
+#header .header-nav #contact-link, #header .language-selector {
+	color: #666;
+	display: block;
+	float: left;
+	font-size: 13px;
+	font-weight: 400;
+	height: 34px;
+	padding-right: 40px;
+	padding-top: 10px;
+}
+
+#header .dropdown-menu {
+	color: #666;
+	font-size: 13px;
+}
+
+#header .menu {
+	background: #ededed;
+	margin-top: 40px;
+}
+
+#header .header-nav #_desktop_contact_link #contact-link {
+    	color: #666;
+}
+
+#header a {
+	color: #666;
+}
+
+
+@media only screen and (min-width: 768px) {
+    #search_widget {
+        float: left;
+    }
+}
+
+.footer-container {
+	background: #313131 none repeat scroll 0 0;
+   	padding-bottom: 63px;
+    	padding-top: 43px;
+}
+
+.footer-container .container {
+	border-top: 1px solid #464646;
+	padding-top: 63px;
+}
+
+#footer, #search_filters_brands {
+	background: #313131 none repeat scroll 0 0;
+}
+
+#search_filters_brands {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.block-contact .block-contact-title {
+	color: #fff;
+    	cursor: pointer;
+    	font-size: 16px;
+    	font-weight: 600;
+    	line-height: 20px;
+   	margin: 0 0 30px;
+    	text-transform: uppercase;
+}
+
+.block-contact a {
+	color: #fff;
+}
+
+#contact-infos {
+	color: #fff;
+   	font-size: 14px;
+    	font-weight: 600;
+    	line-height: 19px;
+    	text-transform: uppercase;
+    	padding-bottom: 8px;
+}
+
+.footer-container .h3, #footer .h3  {
+	color: #fff;
+    	cursor: pointer;
+    	font-size: 16px;
+    	font-weight: 600;
+    	line-height: 20px;
+    	margin: 0 0 30px;
+    	text-transform: uppercase;
+}
+
+.footer-container ul li a {
+	display: block;
+    	color: #fff;
+    	font-size: 14px;
+    	font-weight: 600;
+    	line-height: 17px;
+    	text-transform: uppercase;
+}
+
+.footer-container ul li {
+	color: #fff;
+    	font-size: 14px;
+    	font-weight: 600;
+    	line-height: 19px;
+    	text-transform: uppercase;
+    	padding-bottom: 8px;
+}
+
+.footer-container li a:hover, .block-contact a:hover {
+        color: #ec4445;
+        text-decoration: none;
+}
+
+.payment-logos li {
+	display: inline-block;
+}
+
+.payment-logos li img {
+	height: 60px;
+}
+
+
+.footer-container {
+	padding-bottom: 0px;
+}
+
+.block_newsletter {
+	background: #313131;
+}
+
+#footer #block-newsletter-label {
+	color: #fff;
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 20px;
+	margin: 0 0 30px;
+	text-transform: uppercase;
+}
+
+#footer .col-xs-12 {
+	width: 100%;
+	box-sizing: border-box;
+	padding-right: 55px;
+}
+
+#footer form input[type="email"] {
+	border-radius: 0;
+	color: #606060;
+	display: block;
+	height: 47px;
+	overflow: hidden;
+	padding-left: 15px;
+	background: #fbfbfb none repeat scroll 0 0;
+	border: 1px solid #d7d7d7;
+	font-size: 14px;
+    	font-weight: normal;
+    	margin-bottom: 25px;
+	padding: 6px 12px;
+	width: 100%;
+}
+
+#footer form input, #footer form button {
+	height: 47px;
+}
+
+#footer form button[type="submit"] {
+	background: #ca7379;
+	border-bottom: 2px solid #ad6267;
+	border-style: none none solid;
+	color: #fff;
+	display: block;
+	font-size: 18px;
+	height: 47px;
+	line-height: 45px;
+	right: 0;
+	top: 0;
+	transition: all 300ms ease 0s;
+	width: 50px;
+	overflow: visible;
+	position: absolute;
+}
+
+#footer form button[type="submit"] i {
+	position: absolute;
+	transform: translate(-12px, -12px);
+}
+
+ul {
+	list-style: outside none none;
+	margin: 0;
+	padding: 0;
+}
+
+#search_filters_brands .facet ul li {
+	float: left;
+	width: 50%;
+	padding-bottom: 8px;
+	color: #fff;
+	display: inline;
+	font-size: 14px;
+	font-family: "Cambay", sans-serif;
+	font-weight: 600;
+	line-height: 17px;
+	position: relative;
+	text-transform: uppercase;
+	transition: all 500ms ease 0s;
+}
+
+#search_filters_brands .facet .facet-label a {
+	color: #fff;
+	display: inline;
+	font-size: 14px;
+	font-family: "Cambay", sans-serif;
+	font-weight: 600;
+	line-height: 17px;
+	position: relative;
+	text-transform: uppercase;
+	transition: all 500ms ease 0s;
+}
+
+#search_filters_brands .facet .facet-label a i {
+	color: #ca7379;
+}
+
+#search_filters_brands .facet .brandlist-label {
+	margin-bottom: 30px;
+}
+
+#yarn_assurance_footer {
+	background:red;
+}
+
+#footer {
+	padding-top: 0px;
+}
+
+.container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 970px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 1170px;
+    }
+}
+
+.container {
+    width: 1200px;
+}
+
+@media (min-width: 1169px) and (max-width: 1366px) {
+    .container {
+        width: 1170px;
+    }
+}
+
+footer:first-child {
+	width: 100%;
+}

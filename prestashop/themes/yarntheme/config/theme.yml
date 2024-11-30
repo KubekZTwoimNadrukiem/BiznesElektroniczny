@@ -6,3 +6,12 @@ author:
 version: 1.0.0
 assets:
   use_parent_assets: true
+global_settings:
+  hooks:
+    custom_hooks:
+      – name: displayFooterBeforeBefore
+        title: displayFooterBeforeBefore
+        description: Reassurances in the footer
+    modules_to_hook:
+      displayFooterBeforeBefore:
+        – yarn_assurance
