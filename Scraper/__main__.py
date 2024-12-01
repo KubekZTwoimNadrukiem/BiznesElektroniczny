@@ -8,7 +8,7 @@ def main():
     thumbnailPath = os.path.join(os.getcwd(), "images", "thumbnails")
     colorsPath = os.path.join(os.getcwd(), "images")
     productsPath = os.path.join(os.getcwd(), "results", "products.json")
-    if (len(args) == 4):
+    if (len(args) == 5):
         mainpage = args[1]
         thumbnailPath = args[2]
         colorsPath = args[3]
