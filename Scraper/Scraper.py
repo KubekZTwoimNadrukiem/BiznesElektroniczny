@@ -5,16 +5,19 @@ import json, os
 
 from Category import Category
 from Product import Product
+from Brand import Brand
 from InfoEnums import InfoEnum, InfoEnumYarn
 
 class Scraper:
-    def __init__(self, mainpage, thumbnailsPath, colorsPath, productsJSON):
+    def __init__(self, mainpage, thumbnailsPath, colorsPath, logoPath, resultPath):
         self.mainpage = mainpage
         self.thumbnailPath = thumbnailsPath
         self.colorsPath = colorsPath
-        self.productPath = productsJSON
+        self.logoPath = logoPath
+        self.resultPath = resultPath
         self.listofcategories = []
         self.listofproducts = list()
+        self.listofbrands = []
 
     def getHTML(self, url):
         if url == None: return None
@@ -40,6 +43,15 @@ class Scraper:
                     break
         else:
             self.listofproducts.append(p)
+
+    def onlyCategories(self):
+        list = []
+        for c in self.listofcategories:
+            subc = []
+            for s in c.subcategories:
+                subc.append(s.name)
+            list.append([c.name, subc])
+        return list
 
     def scrapCategory(self, c, isSubcategory):
         soup = self.getHTML(self.mainpage + c.href)
@@ -157,6 +169,27 @@ class Scraper:
                     self.removeDuplicate(p)
                     p.categories.append(c.name)
 
+    def threadBrand(self, b):
+        href = b["href"][1:]
+        soup = self.getHTML(self.mainpage + href)
+        if soup == None: return
+        br = soup.select_one("div.categori-content")
+        logo = None
+        try:
+            logo = br.select_one("div.brand-banner > img")["src"]
+        except:
+            pass
+        brand = Brand(br.select_one("h1").text.strip(), href, logo)
+        self.listofbrands.append(brand)
+
+    def getBrands(self):
+        soup = self.getHTML(self.mainpage)
+        if soup == None: return
+        brands = soup.select_one("div.brand-and-client").select_one("div.brand-logo").select("div.clients")
+        brands = [b.select_one("a") for b in brands]
+        with con.ThreadPoolExecutor() as executor: #max_workers = len(brands)
+            executor.map(self.threadBrand, brands)
+
     def threadImage(self, p):
         img = req.get(p.thumbnail)
         thumbnailPath = os.path.join(self.thumbnailPath, p.href.split("/")[-1] + "." + p.thumbnail.split(".")[-1])
@@ -171,20 +204,30 @@ class Scraper:
             with open(os.path.join(colorsPath, p.colors[i].replace("/", "-") + "." + c.split(".")[-1]), "wb") as f:
                 f.write(img2.content)
             i = i + 1
-    
-    def saveToJSON(self):
-        with open(self.productPath, "w", encoding = "utf-8") as f:     
-            json.dump(self.listofproducts, f, ensure_ascii = False, default = self.toJSON)
 
-    def downloadImages(self):
+    def threadLogo(self, b):
+        img = req.get(b.image)
+        logoPath = os.path.join(self.logoPath, b.image.split("/")[-1])
+        with open(logoPath, "wb") as f:
+            f.write(img.content)
+
+    def saveToJSON(self, content, filename):
+        with open(os.path.join(self.resultPath, filename), "w", encoding = "utf-8") as f:     
+            json.dump(content, f, ensure_ascii = False, default = self.toJSON)
+
+    def downloadImages(self, function, content):
         with con.ThreadPoolExecutor() as executor: #max_workers = len(self.listofproducts)
-            executor.map(self.threadImage, self.listofproducts)
-
+            executor.map(function, content)
+    
     def scrapFull(self):
         self.getCategories()
+        self.saveToJSON(self.onlyCategories(), "categories.json")
+        self.getBrands()
+        self.saveToJSON(self.listofbrands, "brands.json")
+        self.downloadImages(self.threadLogo, self.listofbrands)
         self.getProducts()
-        self.saveToJSON()
-        self.downloadImages()
+        self.saveToJSON(self.listofproducts, "products.json")
+        self.downloadImages(self.threadImage, self.listofproducts)
             
     def statistics(self):
         for c in self.listofcategories:

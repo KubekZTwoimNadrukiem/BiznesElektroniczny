@@ -17,11 +17,11 @@ python3 -m pip install -r <path to project/requirements.txt>
 
 # Uruchamianie programu
 ```
-python3 Scraper <webpage> <path to thumbnails folder> <path to images folder> <path to products file>
+python3 Scraper <webpage> <path to thumbnails folder> <path to logos folder> <path to images folder> <path to folder with JSON files>
 ```
 lub z poziomu projektu
 ```
-python3 __main__.py <webpage> <path to thumbnails folder> <path to images folder> <path to products file>
+python3 __main__.py <webpage> <path to thumbnails folder> <path to logos folder> <path to images folder> <path to folder with JSON files>
 ```
 
 # Deaktywacja środowiska wirtualnego
