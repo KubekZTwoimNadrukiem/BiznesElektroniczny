@@ -100,12 +100,12 @@ class Scraper:
             productColors = product.select_one("select#selectProductSort1").select("option")
             productColors = productColors[1:]
             p.colors = [c.text for c in productColors]
-            p.colorsImages = [[i["title"], i["href"][1:]] for i in productColorsImages]
+            p.colorsImages = [i["href"][1:] for i in productColorsImages]
         except:
             p.stock = 0
             p.colorsImages = [[i["title"], i.select_one("img")["src"][len(self.mainpage):]] for i in productColorsImages]
         p.price = productDetails.select_one("h2 > span").text
-        #p.share = [l["href"] for l in productShare]
+        p.share = [l["href"] for l in productShare]
         if params[1] == False:
             p.brand = info1[InfoEnum.BRAND.value].select("td")[1].text
             p.weigth = info1[InfoEnum.WEIGTH.value].select("td")[1].text
@@ -165,10 +165,12 @@ class Scraper:
         colorsPath = os.path.join(self.colorsPath, p.href.split("/")[-1])
         if (os.path.exists(colorsPath) == False):
             os.mkdir(colorsPath)
+        i = 0
         for c in p.colorsImages:
-            img2 = req.get(self.mainpage + c[1])
-            with open(os.path.join(colorsPath, c[0] + "." + c[1].split(".")[-1]), "wb") as f:
-                f.write(img2.content)   
+            img2 = req.get(self.mainpage + c)
+            with open(os.path.join(colorsPath, p.colors[i].replace("/", "-") + "." + c.split(".")[-1]), "wb") as f:
+                f.write(img2.content)
+            i = i + 1
     
     def saveToJSON(self):
         with open(self.productPath, "w", encoding = "utf-8") as f:     

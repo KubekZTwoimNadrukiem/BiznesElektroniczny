@@ -21,7 +21,6 @@ def main():
     scr = Scraper(mainpage, thumbnailPath, colorsPath, productsPath)
     scr.scrapFull()
     print(time.time() - timeSt)
-    #TODO share products
 
 if __name__ == "__main__":
     main()
