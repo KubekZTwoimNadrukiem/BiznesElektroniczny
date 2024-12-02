@@ -9,14 +9,13 @@ def main():
     colorsPath = os.path.join(os.getcwd(), "images")
     logoPath = os.path.join(os.getcwd(), "images", "logos")
     resultPath = os.path.join(os.getcwd(), "results")
-    if (len(args) == 6):
-        mainpage = args[1]
-        thumbnailPath = args[2]
-        logoPath = args[3]
-        colorsPath = args[4]
-        resultPath = args[5]
+    if (len(args) == 5):
+        thumbnailPath = args[1]
+        logoPath = args[2]
+        colorsPath = args[3]
+        resultPath = args[4]
     if (os.path.exists(thumbnailPath) == False or os.path.exists(colorsPath) == False or os.path.exists(logoPath) == False or os.path.exists(resultPath) == False):
-        print("Path is invalid")
+        print("Path is invalid or does not exist")
         return
     timeSt = time.time()
     scr = Scraper(mainpage, thumbnailPath, colorsPath, logoPath, resultPath)

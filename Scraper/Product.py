@@ -9,6 +9,7 @@ class Product:
         self.stock = None
         self.weigths = None
         self.colors = None
+        self.colorsThumbnails = None
         self.colorsImages = None
         self.brand = None
         self.composition = None

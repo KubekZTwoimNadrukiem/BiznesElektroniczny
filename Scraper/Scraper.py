@@ -71,7 +71,7 @@ class Scraper:
             soup = self.getHTML(categoryURL + page["href"])
 
     def threadSubcategory(self, s):
-        subcategory = Category(self.formatString(s.text), s["href"][1:], [])
+        subcategory = Category(s.text.strip(), s["href"][1:], [])
         self.scrapCategory(subcategory, True)
         return subcategory
 
@@ -81,7 +81,7 @@ class Scraper:
         with con.ThreadPoolExecutor() as executor: #max_workers = len(subcategories)
             for f in executor.map(self.threadSubcategory, subcategories):
                 listofsubcategories.append(f)
-        category = Category(self.formatString(c.text), c["href"][1:], listofsubcategories)
+        category = Category(c.text.strip(), c["href"][1:], listofsubcategories)
         self.scrapCategory(category, False)
         self.listofcategories.append(category)
 
@@ -103,7 +103,9 @@ class Scraper:
         product = soup.select_one("div.single-products")
         productDetails = product.select_one("div.single-product-details")
         productShare = product.select_one("div.sin-social").select("a")
-        productColorsImages = product.select_one("div.single-product-image").select_one("div#my-tab-content").select("a")
+        productImages = product.select_one("div.single-product-image")
+        productColorsImages = productImages.select_one("div#my-tab-content").select("a")
+        productThumbnailsImages = productImages.select_one("div#viewproduct").select("img")
         productInfo = product.select_one("div#content-product-review").select_one("div#my-tab-content")
         info1 = productInfo.select_one("div#info1 > table > tbody").select("tr")
         info2 = productInfo.select_one("div#info2 > p")
@@ -115,7 +117,9 @@ class Scraper:
             p.colorsImages = [i["href"][1:] for i in productColorsImages]
         except:
             p.stock = 0
-            p.colorsImages = [[i["title"], i.select_one("img")["src"][len(self.mainpage):]] for i in productColorsImages]
+            p.colors = [c["title"].replace("/", "-") for c in productColorsImages]
+            p.colorsImages = [i.select_one("img")["src"][len(self.mainpage):] for i in productColorsImages]
+        p.colorsThumbnails = [t["src"][len(self.mainpage):] for t in productThumbnailsImages]
         p.price = productDetails.select_one("h2 > span").text
         p.share = [l["href"] for l in productShare]
         if params[1] == False:
@@ -190,20 +194,24 @@ class Scraper:
         with con.ThreadPoolExecutor() as executor: #max_workers = len(brands)
             executor.map(self.threadBrand, brands)
 
+    def downloadBatch(self, path, p, images):
+        imagesPath = os.path.join(path, p.href.split("/")[-1])
+        if (os.path.exists(imagesPath) == False):
+            os.mkdir(imagesPath)
+        iter = 0
+        for i in images:
+            img = req.get(self.mainpage + i)
+            with open(os.path.join(imagesPath, p.colors[iter].replace("/", "-") + "." + i.split(".")[-1]), "wb") as f:
+                f.write(img.content)
+            iter = iter + 1
+
     def threadImage(self, p):
+        self.downloadBatch(self.thumbnailPath, p, p.colorsThumbnails)
+        thumbnailPath = os.path.join(self.thumbnailPath, p.href.split("/")[-1], "thumbnail-" + p.href.split("/")[-1] + "." + p.thumbnail.split(".")[-1])
         img = req.get(p.thumbnail)
-        thumbnailPath = os.path.join(self.thumbnailPath, p.href.split("/")[-1] + "." + p.thumbnail.split(".")[-1])
         with open(thumbnailPath, "wb") as f:
             f.write(img.content)
-        colorsPath = os.path.join(self.colorsPath, p.href.split("/")[-1])
-        if (os.path.exists(colorsPath) == False):
-            os.mkdir(colorsPath)
-        i = 0
-        for c in p.colorsImages:
-            img2 = req.get(self.mainpage + c)
-            with open(os.path.join(colorsPath, p.colors[i].replace("/", "-") + "." + c.split(".")[-1]), "wb") as f:
-                f.write(img2.content)
-            i = i + 1
+        self.downloadBatch(self.colorsPath, p, p.colorsImages)
 
     def threadLogo(self, b):
         img = req.get(b.image)
