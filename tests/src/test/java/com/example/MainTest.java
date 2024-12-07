@@ -3,6 +3,7 @@ package com.example;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -63,8 +64,8 @@ public class MainTest {
         int productListSize = productList.findElements(By.className("product-thumbnail")).size();
         int size = Math.min(productListSize, 10);
         for (int i = 0; i < size; i++) {
-            wait.until(ExpectedConditions.elementToBeClickable(By.className("product-thumbnail")));
-            productList.findElements(By.className("product-thumbnail")).get(i).sendKeys(Keys.chord(this.controlKey, Keys.ENTER));
+            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")));
+            productList.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")).get(i).sendKeys(Keys.chord(this.controlKey, Keys.ENTER));
         }
         return size;
     }
@@ -72,19 +73,19 @@ public class MainTest {
     @Test
     //TODO change categories
     public void testAddToCart() {
-        int expectedResult = openProductsTabs("http://localhost:8089/en/3-category1");
+        int numberOfTabs = openProductsTabs("http://localhost:8089/en/3-category1");
         webDriver.switchTo().newWindow(WindowType.TAB);
-        expectedResult += openProductsTabs("http://localhost:8089/en/4-category2");
+        numberOfTabs += openProductsTabs("http://localhost:8089/en/4-category2");
         Object windowHandles[] = webDriver.getWindowHandles().toArray();
-        int[] quantities = IntStream.rangeClosed(1, 20).toArray();
-        for (int i = 0, q = 0; i < expectedResult + 2; i++, q++) {
+        int[] quantities = IntStream.rangeClosed(0, 20).map(a -> a % 5 + 1).toArray();
+        for (int i = 0, q = 0; i < numberOfTabs + 2; i++, q++) {
             webDriver.switchTo().window((String) windowHandles[i]);
             try {
                 webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(1));
                 webDriver.findElement(By.id("quantity_wanted"));
             } catch (NoSuchElementException e) {
                 q--;
-                if (i < expectedResult + 1) webDriver.close();
+                if (i < numberOfTabs + 1) webDriver.close();
                 continue;
             }
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("quantity_wanted")));
@@ -97,12 +98,13 @@ public class MainTest {
                 Thread.sleep(Duration.ofSeconds(1));
             } catch (InterruptedException ex) {
             }
-            if (i < expectedResult + 1) webDriver.close();
+            if (i < numberOfTabs + 1) webDriver.close();
         }
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
+        int expectedResult = (Arrays.stream(Arrays.copyOf(quantities, numberOfTabs))).sum();
         String result = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
-        assertEquals(((expectedResult + 1) * expectedResult) / 2, Integer.valueOf(result));
+        assertEquals(expectedResult, Integer.valueOf(result));
         return;
     }
     @Order(2)
@@ -111,14 +113,14 @@ public class MainTest {
         webDriver.get("http://localhost:8089/en/");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String expectedResult = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("ui-autocomplete-input")));
-        WebElement searchBar = webDriver.findElement(By.className("ui-autocomplete-input"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='search_widget']//input[@name='s']")));
+        WebElement searchBar = webDriver.findElement(By.xpath("//div[@id='search_widget']//input[@name='s']"));
         searchBar.clear();
         //TODO change product name
-        searchBar.sendKeys("cool");
+        searchBar.sendKeys("student");
         searchBar.sendKeys(Keys.ENTER);
-        wait.until(ExpectedConditions.elementToBeClickable(By.className("product-thumbnail")));
-        List<WebElement> productList = webDriver.findElements(By.className("product-thumbnail"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")));
+        List<WebElement> productList = webDriver.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a"));
         productList.get(ThreadLocalRandom.current().nextInt(productList.size())).click();
         wait.until(ExpectedConditions.elementToBeClickable(By.className("add-to-cart")));
         webDriver.findElement(By.className("add-to-cart")).click();
@@ -139,14 +141,14 @@ public class MainTest {
         webDriver.get("http://localhost:8089/en/cart?action=show");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String cartSize = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
-        wait.until(ExpectedConditions.elementToBeClickable(By.className("remove-from-cart")));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("js-cart-line-product-quantity")));
-        int deleteButtonsSize = webDriver.findElements(By.className("remove-from-cart")).size();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.remove-from-cart")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.js-cart-line-product-quantity")));
+        int deleteButtonsSize = webDriver.findElements(By.cssSelector("a.remove-from-cart")).size();
         int size = Math.min(deleteButtonsSize, 3);
         int removed = 0;
         for (int i = 0; i < size; i++) {
-            removed += Integer.parseInt(webDriver.findElement(By.className("js-cart-line-product-quantity")).getAttribute("value"));
-            webDriver.findElements(By.className("remove-from-cart")).get(0).click();
+            removed += Integer.parseInt(webDriver.findElement(By.cssSelector("input.js-cart-line-product-quantity")).getAttribute("value"));
+            webDriver.findElement(By.cssSelector("a.remove-from-cart")).click();
             try {
                 Thread.sleep(Duration.ofSeconds(1));
             } catch (InterruptedException ex) {
@@ -206,7 +208,7 @@ public class MainTest {
         webDriver.findElement(By.cssSelector("button[name='confirmDeliveryOption']")).click();
         //wait.until(ExpectedConditions.elementToBeClickable(By.id("payment-option-1")));
         //wait.until(ExpectedConditions.elementToBeClickable(By.id("conditions_to_approve[terms-and-conditions]")));
-        webDriver.findElement(By.id("payment-option-1")).click();
+        jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-1")));
         webDriver.findElement(By.id("conditions_to_approve[terms-and-conditions]")).click();
         try {
             Thread.sleep(Duration.ofSeconds(1));
@@ -218,7 +220,7 @@ public class MainTest {
             Thread.sleep(Duration.ofSeconds(1));
         } catch (InterruptedException ex) {
         }
-        assertDoesNotThrow(() -> webDriver.findElement(By.className("card-block")));
+        assertDoesNotThrow(() -> webDriver.findElement(By.xpath("//h1[contains(.,'Order history')]")));
         return;
     }
     @Order(6)
@@ -235,6 +237,8 @@ public class MainTest {
     @Order(7)
     @Test
     public void testVATFacture() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a[href*='pdf-invoice']")));
+        assertDoesNotThrow(() -> webDriver.findElement(By.cssSelector("a[href*='pdf-invoice']")).click());
         return;
     }
 }
