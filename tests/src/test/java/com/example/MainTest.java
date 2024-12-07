@@ -141,18 +141,16 @@ public class MainTest {
         webDriver.get("http://localhost:8089/en/cart?action=show");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String cartSize = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.remove-from-cart")));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.js-cart-line-product-quantity")));
-        int deleteButtonsSize = webDriver.findElements(By.cssSelector("a.remove-from-cart")).size();
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("remove-from-cart")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("js-cart-line-product-quantity")));
+        int deleteButtonsSize = webDriver.findElements(By.className("emove-from-cart")).size();
         int size = Math.min(deleteButtonsSize, 3);
         int removed = 0;
         for (int i = 0; i < size; i++) {
-            removed += Integer.parseInt(webDriver.findElement(By.cssSelector("input.js-cart-line-product-quantity")).getAttribute("value"));
-            webDriver.findElement(By.cssSelector("a.remove-from-cart")).click();
-            try {
-                Thread.sleep(Duration.ofSeconds(1));
-            } catch (InterruptedException ex) {
-            }
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("js-cart-line-product-quantity")));
+            removed += Integer.parseInt(webDriver.findElement(By.className("js-cart-line-product-quantity")).getAttribute("value"));
+            webDriver.findElement(By.className("remove-from-cart")).click();
+            webDriver.navigate().refresh();
         }
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
@@ -217,10 +215,10 @@ public class MainTest {
         //wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("//div[@id='payment-confirmation']//button[@type='submit']")));
         webDriver.findElement(By.xpath("//div[@id='payment-confirmation']//button[@type='submit']")).click();
         try {
-            Thread.sleep(Duration.ofSeconds(1));
+            Thread.sleep(Duration.ofSeconds(2));
         } catch (InterruptedException ex) {
         }
-        assertDoesNotThrow(() -> webDriver.findElement(By.xpath("//h1[contains(.,'Order history')]")));
+        assertDoesNotThrow(() -> webDriver.findElement(By.xpath("//h3[contains(., 'Your order is confirmed')]")));
         return;
     }
     @Order(6)
