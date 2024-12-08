@@ -56,15 +56,11 @@
         {block name='page_content_container'}
           <section class="page-content" id="content">
             {block name='page_content'}
-              {include file='catalog/_partials/product-flags.tpl'}
+
 
               {block name='product_cover_thumbnails'}
                 {include file='catalog/_partials/product-cover-thumbnails.tpl'}
               {/block}
-              <div class="scroll-box-arrows">
-                <i class="material-icons left">&#xE314;</i>
-                <i class="material-icons right">&#xE315;</i>
-              </div>
 
             {/block}
           </section>
@@ -77,7 +73,7 @@
             {/block}
           {/block}
 
-	  {block name='product_additional_info'}
+	        {block name='product_additional_info'}
             {include file='catalog/_partials/product-additional-info.tpl'}
           {/block}
 
@@ -85,22 +81,22 @@
             {include file='catalog/_partials/product-prices.tpl'}
           {/block}
 
-	{if isset($product_manufacturer->id)}
-	<strong>
-	  <label class="label">{l s='Brand' d='Shop.Theme.Catalog'}:</label>
-        </strong>  
-	<span>
-            <a href="{$product_brand_url}" class="brand_url_link">{$product_manufacturer->name}</a>
-          </span>
-	{/if}
+          {if isset($product_manufacturer->id)}
+            <strong>
+              <label class="label">{l s='Brand' d='Shop.Theme.Catalog'}:</label>
+            </strong>  
+            <span>
+              <a href="{$product_brand_url}" class="brand_url_link">{$product_manufacturer->name}</a>
+            </span>
+          {/if}
 
-	{if $product.show_quantities}
-      		<div class="product-quantities">
-				<strong>
-        			<span data-stock="{$product.quantity}" data-allow-oosp="{$product.allow_oosp}">{$product.quantity} {$product.quantity_label}</span>
-      				</strong>
-		</div>
-   	 {/if}
+          {if $product.show_quantities}
+            <div class="product-quantities">
+                <strong>
+                  <span data-stock="{$product.quantity}" data-allow-oosp="{$product.allow_oosp}">{$product.quantity} {$product.quantity_label}</span>
+                </strong>
+            </div>
+          {/if}
 
           <div class="product-information">
 
@@ -117,11 +113,9 @@
                   <input type="hidden" name="id_product" value="{$product.id}" id="product_page_product_id">
                   <input type="hidden" name="id_customization" value="{$product.id_customization}" id="product_customization_id" class="js-product-customization-id">
 
-                  {block name='product_variants'}
-                    {include file='catalog/_partials/product-variants.tpl'}
-                  {/block}
+                  
 
-                  {block name='product_pack'}
+                  {*{block name='product_pack'}
                     {if $packItems}
                       <section class="product-pack">
                         <p class="h4">{l s='This pack contains' d='Shop.Theme.Catalog'}</p>
@@ -132,12 +126,12 @@
                         {/foreach}
                     </section>
                     {/if}
-                  {/block}
+                  {/block}*}
 
                   {block name='product_discounts'}
                     {include file='catalog/_partials/product-discounts.tpl'}
                   {/block}
-
+                    
                   {block name='product_add_to_cart'}
                     {include file='catalog/_partials/product-add-to-cart.tpl'}
                   {/block}
@@ -151,7 +145,7 @@
 
             {block name='product_tabs'}
               <div class="tabs">
-                <ul class="nav nav-tabs" role="tablist">
+                <ul class="nav nav-tabs col-xs-12 col-sm-4" role="tablist">
                   {if $product.description}
                     <li class="nav-item">
                        <a
@@ -194,7 +188,7 @@
                   {/foreach}
                 </ul>
 
-                <div class="tab-content" id="tab-content">
+                <div class="tab-content col-xs-12 col-sm-8" id="tab-content">
                  <div class="tab-pane fade in{if $product.description} active js-product-tab-active{/if}" id="description" role="tabpanel">
                    {block name='product_description'}
 		     {block name='product_description_short'}

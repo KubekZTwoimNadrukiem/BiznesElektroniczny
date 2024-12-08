@@ -62,7 +62,7 @@
 <div class="block-categories col-xs-12 col-sm-3 ">
 <div class="cat-menu">
 	<div class="sidebar-menu-title">
-		<h2>Categories
+		<h2>{l s='Categories' d='Shop.Theme.Yarn'}
 		</h2>
 	</div>
 

@@ -24,7 +24,7 @@
 *}
 <section>
   <h2>{l s='Best Sellers' d='Modules.Bestsellers.Shop'}</h2>
-  <div class="products">
+  <div class="products owl-carousel">
     {foreach from=$products item="product"}
       {include file="catalog/_partials/miniatures/product.tpl" product=$product}
     {/foreach}

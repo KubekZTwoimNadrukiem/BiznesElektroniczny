@@ -26,5 +26,11 @@
   <h2 class="h2 products-section-title text-uppercase">
     {l s='Popular Products' d='Shop.Theme.Catalog'}
   </h2>
-  {include file="catalog/_partials/productlist.tpl" products=$products cssClass="row" productClass="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+  <div class="products owl-carousel">
+
+    {foreach from=$products item="product" key="position"}
+        {include file="catalog/_partials/miniatures/product.tpl" product=$product position=$position productClasses=$productClasses}
+    {/foreach}
+
+</div>
 </section>

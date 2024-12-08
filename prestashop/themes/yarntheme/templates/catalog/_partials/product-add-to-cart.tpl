@@ -24,11 +24,14 @@
  *}
 <div class="product-add-to-cart js-product-add-to-cart">
   {if !$configuration.is_catalog}
-    <span class="control-label">{l s='Quantity' d='Shop.Theme.Catalog'}</span>
+    
 
     {block name='product_quantity'}
       <div class="product-quantity clearfix">
+
+
         <div class="qty">
+        <label class="control-label">{l s='Quantity' d='Shop.Theme.Catalog'}</label>
           <input
             type="number"
             name="qty"
@@ -47,11 +50,11 @@
           >
         </div>
 
-	<div class="cart-variants">
-	{block name='product_variants'}
+        
+        {block name='product_variants'}
           {include file='catalog/_partials/product-variants.tpl'}
         {/block}
-	</div>
+        
 
         <div class="add">
           <button
