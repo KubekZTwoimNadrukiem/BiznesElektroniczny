@@ -20,10 +20,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.WindowType;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -57,6 +55,7 @@ public class MainTest {
         driverService.stop();
         return;
     }
+    @Deprecated
     private int openProductsTabs(String category) {
         webDriver.get(category);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("product-thumbnail")));
@@ -69,10 +68,31 @@ public class MainTest {
         }
         return size;
     }
+    private int addProductsFromCategory(String category, int[] quantities, int offset) {
+        webDriver.get(category);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("js-product-list")));
+        int productListSize = webDriver.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']")).size();
+        int size = Math.min(productListSize, 10);
+        for (int i = 0; i < size; i++) {
+            webDriver.get(category);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("js-product-list")));
+            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")));
+            webDriver.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")).get(i).click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("quantity_wanted")));
+            WebElement input = webDriver.findElement(By.id("quantity_wanted"));
+            input.sendKeys(Keys.chord(this.controlKey, "A", Keys.DELETE));
+            input.sendKeys(String.valueOf(quantities[offset + i]));
+            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.add-to-cart")));
+            webDriver.findElement(By.cssSelector("button.add-to-cart")).click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='blockcart-modal' and @style='display: block;']")));
+        }
+        return size;
+    }
     @Order(1)
     @Test
     //TODO change categories
     public void testAddToCart() {
+        /*
         int numberOfTabs = openProductsTabs("http://localhost:8089/en/3-category1");
         webDriver.switchTo().newWindow(WindowType.TAB);
         numberOfTabs += openProductsTabs("http://localhost:8089/en/4-category2");
@@ -100,9 +120,13 @@ public class MainTest {
             }
             if (i < numberOfTabs + 1) webDriver.close();
         }
+        */
+        int[] quantities = IntStream.rangeClosed(0, 19).map(a -> a % 5 + 1).toArray();
+        int offset = addProductsFromCategory("http://localhost:8089/en/3-category1", quantities, 0);
+        offset += addProductsFromCategory("http://localhost:8089/en/4-category2", quantities, offset);
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
-        int expectedResult = (Arrays.stream(Arrays.copyOf(quantities, numberOfTabs))).sum();
+        int expectedResult = (Arrays.stream(Arrays.copyOf(quantities, offset))).sum();
         String result = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
         assertEquals(expectedResult, Integer.valueOf(result));
         return;
@@ -124,10 +148,7 @@ public class MainTest {
         productList.get(ThreadLocalRandom.current().nextInt(productList.size())).click();
         wait.until(ExpectedConditions.elementToBeClickable(By.className("add-to-cart")));
         webDriver.findElement(By.className("add-to-cart")).click();
-        try {
-            Thread.sleep(Duration.ofSeconds(1));
-        } catch (InterruptedException ex) {
-        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='blockcart-modal' and @style='display: block;']")));
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String result = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
@@ -204,9 +225,9 @@ public class MainTest {
         JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
         jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("delivery_option_1")));
         webDriver.findElement(By.cssSelector("button[name='confirmDeliveryOption']")).click();
-        //wait.until(ExpectedConditions.elementToBeClickable(By.id("payment-option-1")));
+        //wait.until(ExpectedConditions.elementToBeClickable(By.id("payment-option-2")));
         //wait.until(ExpectedConditions.elementToBeClickable(By.id("conditions_to_approve[terms-and-conditions]")));
-        jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-1")));
+        jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-2")));
         webDriver.findElement(By.id("conditions_to_approve[terms-and-conditions]")).click();
         try {
             Thread.sleep(Duration.ofSeconds(1));
