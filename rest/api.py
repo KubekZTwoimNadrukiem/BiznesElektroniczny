@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup, CData
 from utils import get_endpoints
+import os.path
 
 class API:
     def __init__(self, auth_header):
@@ -132,23 +133,19 @@ class API:
     def add_category(self, category, parent_id = 0):
         blank = requests.get(self.endpoints['categories'].path + "?schema=synopsis", headers=self.auth_header)
         bs_blank = BeautifulSoup(blank.text, "xml")
-        for t in ["level_depth", "nb_products_recursive", "position", "date_add", "date_upd",
-                  "meta_keywords", "meta_description"]:
+        for t in ["level_depth", "nb_products_recursive", "position", "date_add", "date_upd","meta_keywords", "meta_description",
+        "id_shop_default", "is_root_category"]:
             for s in bs_blank.select(t):
                 s.extract()
         name = bs_blank.find("name")
         name_languages = name.find_all("language")
         for language in name_languages:
             language.string = CData(category)
-        is_root_category = bs_blank.find("is_root_category")
-        if parent_id == 0:
-            is_root_category.string = "1"
-        else:
-            is_root_category.string = "0"
-        id_shop_default = bs_blank.find("id_shop_default")
-        id_shop_default.string = "1"
         parent = bs_blank.find("id_parent")
-        parent.string = str(parent_id)
+        if parent_id == 0:
+            parent.string = "2"    
+        else:
+            parent.string = str(parent_id)
         active = bs_blank.find("active")
         active.string = "1"
         link_rewrite = bs_blank.find("link_rewrite")
@@ -191,7 +188,7 @@ class API:
     def add_tax(self, rate, country = "PL"):
         blank = requests.get(self.endpoints['taxes'].path + "?schema=synopsis", headers=self.auth_header)
         bs_blank = BeautifulSoup(blank.text, "xml")
-        print(bs_blank.prettify())
+        #print(bs_blank.prettify())
         name = bs_blank.find("name")
         name_languages = name.find_all("language")
         for language in name_languages:
@@ -292,7 +289,7 @@ class API:
             return -1
         bs_status = BeautifulSoup(status.text, "xml")
         supplier_id = bs_status.find("id")
-        print(supplier_id)
+        #print(supplier_id)
 
     def add_combination(self, product_id, price, product_option_value_id):
         print(f"Adding combination {product_option_value_id} to {product_id}")
@@ -344,7 +341,7 @@ class API:
         filename = image_path.split("/")[-1]
         files = {"image": (filename, file, mime_type)}
         response = requests.post(address, headers=self.auth_header, files=files)
-        print(response.status_code)
+        #print(response.status_code)
         #print(response.text)
     
 
@@ -419,7 +416,7 @@ class API:
 
     
     def add_product_option_value(self, name, option_id):
-        print(f"Adding product option value {name}")
+        #print(f"Adding product option value {name}")
         blank = requests.get(self.endpoints['product_option_values'].path + "?schema=synopsis", headers=self.auth_header)
         bs_blank = BeautifulSoup(blank.text, "xml")
         id_attribute_group = bs_blank.find("id_attribute_group")
@@ -444,7 +441,7 @@ class API:
     def update_combination_stock(self, combination_id, quantity):
         blank = requests.get(self.endpoints['stock_availables'].path + f"?filter[id_product_attribute]={combination_id}&display=full", headers=self.auth_header)
         bs_blank = BeautifulSoup(blank.text, "xml")
-        to_remove = ["id_shop", "id_shop_group", "location"]
+        to_remove = ["id_shop_group", "location"]
         for t in to_remove:
             for s in bs_blank.select(t):
                 s.extract()
@@ -453,17 +450,142 @@ class API:
         stock_id = bs_blank.find("id").get_text()
         stock_available = bs_blank.find("stock_available")
         stock_availables = bs_blank.find("stock_availables")
+        depends_on_stock = bs_blank.find("depends_on_stock")
+        depends_on_stock.string = "0"
+        id_shop = bs_blank.find("id_shop")
+        id_shop.string = "1"
+        out_of_stock = bs_blank.find("out_of_stock")
+        out_of_stock.string = "0"
         prestashop = bs_blank.find("prestashop")
         prestashop.append(stock_available)
         stock_availables.extract()
-        print(bs_blank.prettify())
-        status = requests.put(self.endpoints['stock_availables'].path + f"/{stock_id}", headers=self.auth_header, data=bs_blank.encode())
+        #print(bs_blank.prettify())
+        headers = self.auth_header.copy()
+        headers["Content-Type"] = "text/xml"
+        path = self.endpoints['stock_availables'].path + f"/{stock_id}"
+        #print(path)
+        status = requests.put(path, headers=headers, data=bs_blank.encode())
         if status.status_code != 200:
             print(f"Failed to update stock for combination {combination_id}")
             print(status.text)
             return -1
-        print(status.status_code)
+        #print(status.status_code)
+        #print(status.text)
         return 0
+    
+
+    def upload_product_image(self, image_path, product_id, mime_type = "image/jpeg"):
+        try:
+            with open(image_path, "rb") as file:
+                filename = image_path.split("/")[-1]
+                files = {"image": (filename, file, mime_type)}
+                address = f"{self.endpoints['images'].path}/products/{product_id}"
+                response = requests.post(address, headers=self.auth_header, files=files)
+
+                if response.status_code != 200:
+                    print(f"Failed to upload image for product {product_id} - status code:", response.status_code)
+                    response_xml = BeautifulSoup(response.text, "xml")
+                    print(response_xml.prettify())
+                    return None
+
+                # Extract the image ID from the response
+                response_xml = BeautifulSoup(response.text, "xml")
+                image_id = response_xml.find("id").get_text()
+                print(f"Uploaded image ID: {image_id}")
+                return image_id
+
+        except FileNotFoundError:
+            print(f"File not found: {image_path}")
+            return None
+        except Exception as e:
+            print(f"Error uploading image: {e}")
+            return None
+        
+    
+    def associate_image_with_combination(self, product_id, combination_id, image_id):
+    # Retrieve the existing combination data
+        url = f"{self.endpoints['combinations'].path}/{combination_id}"
+        response = requests.get(url, headers=self.auth_header)
+        
+        if response.status_code != 200:
+            print(f"[{product_id}] Failed to retrieve combination {combination_id} - status code:", response.status_code)
+            print(response.text)
+            return -1
+
+        # Parse the combination data
+        bs_combination = BeautifulSoup(response.text, "xml")
+        to_remove = ["id_product_attribute", "location", "ean13", "upc", "isbn", "mpn", "reference", "supplier_reference", "wholesale_price", "ecotax", "weight", "quantity", "unit_price_impact","default_on", "available_date", "low_stock_threshold", "low_stock_alert"]
+        for t in to_remove:
+            for s in bs_combination.select(t):
+                s.extract()
+
+        # Find the associations node
+        associations = bs_combination.find("associations")
+        if not associations:
+            associations = bs_combination.new_tag("associations")
+            bs_combination.combination.append(associations)
+
+        # Add the new image association
+        images = associations.find("images")
+        if not images:
+            images = bs_combination.new_tag("images")
+            associations.append(images)
+
+        # Create a new image node with the uploaded image ID
+        new_image = bs_combination.new_tag("image")
+        new_image.append(bs_combination.new_tag("id", string=str(image_id)))
+        images.append(new_image)
+
+        # Send the PUT request to update the combination
+        headers = self.auth_header.copy()
+        headers["Content-Type"] = "text/xml"
+        update_response = requests.put(url, headers=headers, data=bs_combination.encode())
+
+        if update_response.status_code != 200:
+            print(f"[{product_id}] Failed to associate image {image_id} with combination {combination_id} - status code:", update_response.status_code)
+            print(update_response.text)
+            return -1
+
+        print(f"[{product_id}] Successfully associated image {image_id} with combination {combination_id}")
+        return 0
+    
+
+    def add_product_combination_image(self, image_path, product_id, combination_id):
+        # check if the image exists\
+        mime_type = "image/jpeg"
+        if os.path.isfile(image_path + ".jpg"):
+            image_path += ".jpg"
+        elif os.path.isfile(image_path + ".JPG"):
+            image_path += ".JPG"
+        elif os.path.isfile(image_path + ".jpeg"):
+            image_path += ".jpeg"
+        elif os.path.isfile(image_path + ".JPEG"):
+            image_path += ".JPEG"
+        elif os.path.isfile(image_path + ".png"):
+            image_path += ".png"
+            mime_type = "image/png"
+        else:
+            print(f"[{product_id}] Image not found: {image_path}, choosing random from the folder.")
+            folder_path = os.path.dirname(image_path)
+            for file in os.listdir(folder_path):
+                if file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg") or file.endswith(".JPEG"):
+                    image_path = folder_path + "/" + file
+                    break
+                elif file.endswith(".png"):
+                    image_path = folder_path + "/" + file
+                    mime_type = "image/png"
+                    break
+
+            print(f"[{product_id}] Chose {image_path.split('/')[-1]}")
+
+        image_id = self.upload_product_image(image_path, product_id, mime_type)
+        if not image_id:
+            print(f"[{product_id}] Image upload failed for {image_path}.")
+            return -1
+
+        # Step 2: Associate the uploaded image with the combination
+        result = self.associate_image_with_combination(product_id, combination_id, image_id)
+        return result
 
 
     def add_product(self, product_name, price, manufacturer_id, category_ids, tax_id, description = "", supplier_id = 1, width = None, height = None, depth = None, weight = None, needle_value_id = None, crochet_value_id = None, composition_value_id = None, length_value_id = None, country_value_id = None, needle_id = None, crochet_id = None, composition_id = None, length_id = None, country_id = None):

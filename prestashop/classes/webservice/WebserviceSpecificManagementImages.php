@@ -63,7 +63,7 @@ class WebserviceSpecificManagementImagesCore implements WebserviceSpecificManage
     /**
      * @var int The maximum size supported when uploading images, in bytes
      */
-    protected $imgMaxUploadSize = 3000000;
+    protected $imgMaxUploadSize = 300000000;
 
     /**
      * @var array The list of supported mime types
