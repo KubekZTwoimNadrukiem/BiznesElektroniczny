@@ -24,7 +24,7 @@ python3 Scraper [<path to thumbnails folder> <path to logos folder> <path to ima
 ```
 lub z poziomu projektu
 ```
-python3 __main__.py <path to thumbnails folder> <path to logos folder> <path to images folder> <path to folder with JSON files>
+python3 __main__.py [<path to thumbnails folder> <path to logos folder> <path to images folder> <path to folder with JSON files>]
 ```
 Domyślne ścieżki to:
 - `<path to thumbnails folder>` – `./images/thumbnails`

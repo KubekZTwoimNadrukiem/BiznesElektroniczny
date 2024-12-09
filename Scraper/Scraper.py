@@ -54,7 +54,9 @@ class Scraper:
         return list
 
     def scrapCategory(self, c, isSubcategory):
+        print("[" + c.name + "] started scrapping")
         soup = self.getHTML(self.mainpage + c.href)
+        if soup == None: return
         categoryURL = self.mainpage + (c.href if isSubcategory == True else "")
         while soup != None:
             products = soup.select_one("div#grid").select("div.featured-inner")
@@ -100,6 +102,7 @@ class Scraper:
         p = params[0]
         soup = self.getHTML(self.mainpage + p.href)
         if soup == None: return
+        print("[" + p.name + "] started scrapping")
         product = soup.select_one("div.single-products")
         productDetails = product.select_one("div.single-product-details")
         productShare = product.select_one("div.sin-social").select("a")
@@ -184,6 +187,7 @@ class Scraper:
         except:
             pass
         brand = Brand(br.select_one("h1").text.strip(), href, logo)
+        print("[" + brand.name + "] started scrapping")
         self.listofbrands.append(brand)
 
     def getBrands(self):
@@ -206,6 +210,7 @@ class Scraper:
             iter = iter + 1
 
     def threadImage(self, p):
+        print("[" + p.name + "] started downloading images")
         self.downloadBatch(self.thumbnailPath, p, p.colorsThumbnails)
         thumbnailPath = os.path.join(self.thumbnailPath, p.href.split("/")[-1], "thumbnail-" + p.href.split("/")[-1] + "." + p.thumbnail.split(".")[-1])
         img = req.get(p.thumbnail)
@@ -215,6 +220,8 @@ class Scraper:
 
     def threadLogo(self, b):
         img = req.get(b.image)
+        if img == None: return
+        print("[" + b.name + "] started downloading logo")
         logoPath = os.path.join(self.logoPath, b.image.split("/")[-1])
         with open(logoPath, "wb") as f:
             f.write(img.content)
@@ -222,6 +229,7 @@ class Scraper:
     def saveToJSON(self, content, filename):
         with open(os.path.join(self.resultPath, filename), "w", encoding = "utf-8") as f:     
             json.dump(content, f, ensure_ascii = False, default = self.toJSON)
+        print("[" + filename + "] saved")
 
     def downloadImages(self, function, content):
         with con.ThreadPoolExecutor() as executor: #max_workers = len(self.listofproducts)
