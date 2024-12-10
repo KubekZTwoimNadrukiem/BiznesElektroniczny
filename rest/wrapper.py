@@ -4,6 +4,11 @@ from utils import encode_key, get_endpoints
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+def rreplace(s, old, new, occurrence):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+
+
 class Wrapper:
     def __init__(self, key, api_url):
         encoded_key = encode_key(username = key)
@@ -86,10 +91,10 @@ class Wrapper:
 
 
     def load_single_product(self, path, product, color_id, tax_id, composition_id, length_id, needle_id, crochet_id, country_id):
-        name = product["name"].title()
+        name = product["name"].title().replace("#", "")
         #print(name)
         price = round(float(product["price"].replace("€", "")) * self.euro_conversion, 2)
-        manufacturer = product["brand"]
+        manufacturer = product["brand"].replace("#", "")
         manufacturer_id = self.api.get_manufacturer_id(manufacturer)
         href = product["href"]
         folder_name = href.split("/")[-1]
@@ -102,7 +107,11 @@ class Wrapper:
         if colors != None:
             for color in colors:
                 separate = color.split(" ")
-                stock = int(separate[-2])
+                # check if the part before the last is a number
+                try:
+                    stock = int(separate[-2])
+                except ValueError:
+                    stock = 5
                 color_stock.append(stock)
         composition = product["composition"]
         country = product["country"]
@@ -115,13 +124,13 @@ class Wrapper:
         crochetSize = product["crochetSize"]
         if weight != None:
             #print(weight, name)
-            if weight.strip() == "PLASTIC 100%" or weight.strip() == "POLYESTER 100%" or weight.strip() == "ACRYLIC 100%" or weight.strip() == "POLYAMIDE 100%" or weight.strip() == "POLYAMIDE 20% POLYESTER 80%":
+            try:
+                weight_value = float(weight.split(" ")[0])
+            except ValueError:
                 weight_value = float(product["length"].split(" ")[0])
                 composition = product["weigth"]
                 length = product["country"]
                 country = None
-            else:
-                weight_value = float(weight.split(" ")[0])
         else:
             weight_value = None
         #weigths = product["weigths"]
@@ -152,7 +161,7 @@ class Wrapper:
         if product_id == -1:
             print(f"Failed to add {name}, breaking...")
             RuntimeError("Failed to add product.")
-        for i in range(len(colors)):
+        for i in range(min(len(colors), 2)):
             color_option_id = self.add_product_option_value(colors[i], color_id)
             if color_option_id == -1:
                 print(f"Failed to add color {colors[i]}, breaking...")
@@ -161,11 +170,11 @@ class Wrapper:
             if combination_id == -1:
                 print(f"Failed to add combination {colors[i]}, breaking...")
                 RuntimeError("Failed to add combination.")
-            combination_stock_status = self.api.update_combination_stock(combination_id, color_stock[i])
+            combination_stock_status = self.api.update_combination_stock(combination_id, min(color_stock[i], 10))
             if combination_stock_status == -1:
                 print(f"Failed to update stock for combination {colors[i]}, breaking...")
                 RuntimeError("Failed to update stock.")
-            full_path = path + "images/" + folder_name + "/" + colors[i]
+            full_path = path + "images/" + folder_name + "/" + colors[i].replace("/", "-") + ".jpg"
             image_add_status = self.api.add_product_combination_image(full_path, product_id, combination_id)
             if image_add_status == -1:
                 print(f"Failed to add image for {colors[i]}, breaking...")
@@ -190,7 +199,7 @@ class Wrapper:
                     executor.submit(
                         self.load_single_product, path, product, color_id, tax_id, composition_id, length_id, needle_id, crochet_id, country_id
                     ): product
-                    for product in products
+                    for product in products[]
                 }
                 
                 for future in as_completed(futures):
