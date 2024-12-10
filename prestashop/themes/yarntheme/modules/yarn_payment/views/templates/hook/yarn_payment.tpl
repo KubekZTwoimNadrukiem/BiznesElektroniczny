@@ -5,10 +5,6 @@
 	
 	<ul class="payment-logos">
 		<li>
-			<img alt="PayPal logo" src="{$urls.img_url}paypal.png">
-		</li>
-		
-		<li>
 			<img alt="Mastercard logo" src="{$urls.img_url}mastercard.png">
 		</li>
 		
