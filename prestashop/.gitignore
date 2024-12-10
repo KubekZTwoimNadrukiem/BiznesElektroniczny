@@ -9,6 +9,7 @@ npm-debug.log.*
 /cache/*
 download/*
 #/img/*
+/img/tmp/*
 /log/*
 /upload/*
 #/vendor/*
@@ -44,9 +45,9 @@ app/config/config.php
 
 !modules/*
 modules/config_*.xml
-modules/ps_imageslider/images/*
+#modules/ps_imageslider/images/*
 !modules/ps_imageslider/images/index.php
-modules/ps_banner/img/*
+#modules/ps_banner/img/*
 !modules/ps_banner/img/index.php
 
 !override/*

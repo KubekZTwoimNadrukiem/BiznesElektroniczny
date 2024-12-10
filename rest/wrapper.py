@@ -238,8 +238,8 @@ class Wrapper:
 
 
     def load_data(self, path):
-        #self.load_brands(path + "results/brands.json", path + "images/logos/")
-        #self.load_categories(path + "results/categories.json")
+        self.load_brands(path + "results/brands.json", path + "images/logos/")
+        self.load_categories(path + "results/categories.json")
         self.load_products(path)
         #print(self.api.get_category_id("Home", 1))
         pass
