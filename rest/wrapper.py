@@ -160,7 +160,7 @@ class Wrapper:
         product_id = self.api.add_product(name, price, manufacturer_id, category_ids, tax_id, description, weight=weight_value, composition_id = composition_id, length_id = length_id, needle_id = needle_id, crochet_id = crochet_id, country_id = country_id, composition_value_id = composition_value_id, length_value_id = length_value_id, needle_value_id = needleSize_value_id, crochet_value_id = crochetSize_value_id,country_value_id=country_value_id)
         if product_id == -1:
             print(f"Failed to add {name}, breaking...")
-            RuntimeError("Failed to add product.")
+            return -1
         for i in range(min(len(colors), 2)):
             color_option_id = self.add_product_option_value(colors[i], color_id)
             if color_option_id == -1:
@@ -169,16 +169,16 @@ class Wrapper:
             combination_id = self.api.add_combination(product_id, price, color_option_id)
             if combination_id == -1:
                 print(f"Failed to add combination {colors[i]}, breaking...")
-                RuntimeError("Failed to add combination.")
+                return -1
             combination_stock_status = self.api.update_combination_stock(combination_id, min(color_stock[i], 10))
             if combination_stock_status == -1:
                 print(f"Failed to update stock for combination {colors[i]}, breaking...")
-                RuntimeError("Failed to update stock.")
+                return -1
             full_path = path + "images/" + folder_name + "/" + colors[i].replace("/", "-") + ".jpg"
             image_add_status = self.api.add_product_combination_image(full_path, product_id, combination_id)
             if image_add_status == -1:
                 print(f"Failed to add image for {colors[i]}, breaking...")
-                RuntimeError("Failed to add image.")
+                return -1
 
 
     def load_products(self, path):
@@ -199,7 +199,7 @@ class Wrapper:
                     executor.submit(
                         self.load_single_product, path, product, color_id, tax_id, composition_id, length_id, needle_id, crochet_id, country_id
                     ): product
-                    for product in products[]
+                    for product in products
                 }
                 
                 for future in as_completed(futures):
