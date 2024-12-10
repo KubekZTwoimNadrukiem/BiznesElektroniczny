@@ -1,6 +1,7 @@
 # Instalacja środowiska wirtualnego
 
-**Uwaga 1.** Jeżeli w nazwię folderu występują spację, należy taką nazwę napisać w cudzysłowie.
+
+**Uwaga 1.** Jeżeli w nazwie folderu występują spacje, należy taką nazwę napisać w cudzysłowie.
 
 **Windows (cmd)**
 
@@ -35,13 +36,10 @@ python3 __main__.py [<path to thumbnails folder> <path to logos folder> <path to
 ```
 
 Domyślne ścieżki to:
-
 - `<path to thumbnails folder>` – `./images/thumbnails`
 - `<path to logos folder>` – `./images/logos`
 - `<path to images folder>` – `./images`
 - `<path to folder with JSON files>` – `./results`
-
-# Deaktywacja środowiska wirtualnego
 
 ```
 deactivate
