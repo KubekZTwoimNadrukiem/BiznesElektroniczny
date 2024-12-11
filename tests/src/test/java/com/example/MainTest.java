@@ -55,24 +55,11 @@ public class MainTest {
         driverService.stop();
         return;
     }
-    @Deprecated
-    private int openProductsTabs(String category) {
-        webDriver.get(category);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("product-thumbnail")));
-        WebElement productList = webDriver.findElement(By.id("js-product-list"));
-        int productListSize = productList.findElements(By.className("product-thumbnail")).size();
-        int size = Math.min(productListSize, 10);
-        for (int i = 0; i < size; i++) {
-            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")));
-            productList.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")).get(i).sendKeys(Keys.chord(this.controlKey, Keys.ENTER));
-        }
-        return size;
-    }
     private int addProductsFromCategory(String category, int[] quantities, int offset) {
         webDriver.get(category);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("js-product-list")));
         int productListSize = webDriver.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']")).size();
-        int size = Math.min(productListSize, 10);
+        int size = Math.min(productListSize, 5);
         for (int i = 0; i < size; i++) {
             webDriver.get(category);
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("js-product-list")));
@@ -92,38 +79,9 @@ public class MainTest {
     @Test
     //TODO change categories
     public void testAddToCart() {
-        /*
-        int numberOfTabs = openProductsTabs("http://localhost:8089/en/3-category1");
-        webDriver.switchTo().newWindow(WindowType.TAB);
-        numberOfTabs += openProductsTabs("http://localhost:8089/en/4-category2");
-        Object windowHandles[] = webDriver.getWindowHandles().toArray();
-        int[] quantities = IntStream.rangeClosed(0, 20).map(a -> a % 5 + 1).toArray();
-        for (int i = 0, q = 0; i < numberOfTabs + 2; i++, q++) {
-            webDriver.switchTo().window((String) windowHandles[i]);
-            try {
-                webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(1));
-                webDriver.findElement(By.id("quantity_wanted"));
-            } catch (NoSuchElementException e) {
-                q--;
-                if (i < numberOfTabs + 1) webDriver.close();
-                continue;
-            }
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("quantity_wanted")));
-            WebElement input = webDriver.findElement(By.id("quantity_wanted"));
-            input.sendKeys(Keys.chord(this.controlKey, "A", Keys.DELETE));
-            input.sendKeys(String.valueOf(quantities[q]));
-            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.add-to-cart")));
-            webDriver.findElement(By.cssSelector("button.add-to-cart")).click();
-            try {
-                Thread.sleep(Duration.ofSeconds(1));
-            } catch (InterruptedException ex) {
-            }
-            if (i < numberOfTabs + 1) webDriver.close();
-        }
-        */
-        int[] quantities = IntStream.rangeClosed(0, 19).map(a -> a % 5 + 1).toArray();
-        int offset = addProductsFromCategory("http://localhost:8089/en/3-category1", quantities, 0);
-        offset += addProductsFromCategory("http://localhost:8089/en/4-category2", quantities, offset);
+        int[] quantities = IntStream.rangeClosed(0, 19).map(a -> a % 3 + 1).toArray();
+        int offset = addProductsFromCategory("http://localhost:8089/en/41-cotton", quantities, 0);
+        offset += addProductsFromCategory("http://localhost:8089/en/17-children-buttons", quantities, offset);
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         int expectedResult = (Arrays.stream(Arrays.copyOf(quantities, offset))).sum();
@@ -141,7 +99,7 @@ public class MainTest {
         WebElement searchBar = webDriver.findElement(By.xpath("//div[@id='search_widget']//input[@name='s']"));
         searchBar.clear();
         //TODO change product name
-        searchBar.sendKeys("student");
+        searchBar.sendKeys("mug");
         searchBar.sendKeys(Keys.ENTER);
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a")));
         List<WebElement> productList = webDriver.findElements(By.xpath("//div[@id='js-product-list']//div[@class='product-price-and-shipping']//a"));
@@ -157,7 +115,6 @@ public class MainTest {
     }
     @Order(3)
     @Test
-    //TODO Yarnstreet asks to confirm the deletion of product through an alert window
     public void testRemoveFromCart() {
         webDriver.get("http://localhost:8089/en/cart?action=show");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
@@ -181,7 +138,6 @@ public class MainTest {
     }
     @Order(4)
     @Test
-    //TODO Yarnstreet has different fileds (email, password, confirm password)
     public void testCreateAccount(){
         webDriver.get("http://localhost:8089/en/login?create_account=1");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-firstname")));
@@ -207,7 +163,6 @@ public class MainTest {
     }
     @Order(5)
     @Test
-    //TODO change delivery and payment options' id
     public void testPlaceOrder() {
         webDriver.get("http://localhost:8089/en/cart?action=show");
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.btn-primary")));
@@ -225,9 +180,9 @@ public class MainTest {
         JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
         jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("delivery_option_1")));
         webDriver.findElement(By.cssSelector("button[name='confirmDeliveryOption']")).click();
-        //wait.until(ExpectedConditions.elementToBeClickable(By.id("payment-option-2")));
+        //wait.until(ExpectedConditions.elementToBeClickable(By.id("payment-option-1")));
         //wait.until(ExpectedConditions.elementToBeClickable(By.id("conditions_to_approve[terms-and-conditions]")));
-        jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-2")));
+        jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-1")));
         webDriver.findElement(By.id("conditions_to_approve[terms-and-conditions]")).click();
         try {
             Thread.sleep(Duration.ofSeconds(1));
