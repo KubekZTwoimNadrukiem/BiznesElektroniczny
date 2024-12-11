@@ -5,7 +5,7 @@
 1. [Prestashop](https://pl.prestashop.com/) w wersji 1.7.8 - główny silnik sklepu internetowego.
 2. [MySQL](https://www.mysql.com/) w wersji 8.0 - baza danych całego projektu.
 3. [Python](https://www.python.org/) w wersji 3.12 z bibliotekami requests oraz BeautifulSoup4 - scraping oryginalnego sklepu oraz połączenie z REST API Prestashop.
-4. [Selenium](https://www.selenium.dev/) oraz [Java](https://www.java.com/en/) - testy projektu.
+4. [Selenium](https://www.selenium.dev/) w wersji 2.26.0 oraz [Java](https://www.java.com/en/) w wersji 23 - testy projektu.
 5. [Docker](https://www.docker.com/) - unifikacja środowiska docelowego, ułatwienie konfiguracji, oraz konteneryzacja elementów aplikacji.
 
 ## Członkowie zespołu
