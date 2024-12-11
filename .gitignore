@@ -1,5 +1,5 @@
-### Docker Compose ###
-docker-compose.override.yml
-
-### Database ###
-#/db
+.vscode/
+target/
+db/
+build/
+.DS_Store
