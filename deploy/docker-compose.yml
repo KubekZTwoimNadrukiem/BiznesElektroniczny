@@ -1,0 +1,31 @@
+services:
+  prestashop:
+    image: aegiru/nadruk-prestashop:latest
+    restart: always
+    ports:
+      - 18875:80
+    environment:
+      DB_SERVER: admin-mysql_db
+      DB_NAME: BE_188752
+      DB_USER: root
+      DB_PASSWD: student5
+    networks:
+      - admin-mysql_default
+      - nadruk_prestashop
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1024M
+  memcached:
+    image: memcached:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  nadruk_prestashop:
+  admin-mysql_default:
+    external: true
