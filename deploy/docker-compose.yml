@@ -1,7 +1,6 @@
 services:
   prestashop:
     image: aegiru/nadruk-prestashop:latest
-    restart: always
     ports:
       - 18875:80
     environment:
