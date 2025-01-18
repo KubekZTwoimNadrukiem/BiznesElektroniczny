@@ -17,7 +17,7 @@ jobs:
       - name: Build Image
         run: |
           cd prestashop
-          docker build . -t 'aegiru/nadruk-prestashop:latest'                                                                                                                                                  ✔  19:30:53  
+          docker build . -t 'aegiru/nadruk-prestashop:latest'
       - name: Login & Push
         run: |
           docker login -u aegiru -p ${{ secrets.DOCKER_HUB_TOKEN }}
