@@ -1,6 +1,6 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10;
+namespace ps_metrics_module_v4_0_8;
 
 /**
  * Copyright since 2007 PrestaShop SA and Contributors

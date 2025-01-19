@@ -1,6 +1,6 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Prestashop\ModuleLibGuzzleAdapter\Interfaces;
+namespace ps_metrics_module_v4_0_8\Prestashop\ModuleLibGuzzleAdapter\Interfaces;
 
 interface ConfigInterface
 {

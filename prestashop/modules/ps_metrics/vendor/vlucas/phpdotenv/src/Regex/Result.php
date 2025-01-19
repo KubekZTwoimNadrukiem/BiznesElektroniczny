@@ -1,6 +1,6 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Dotenv\Regex;
+namespace ps_metrics_module_v4_0_8\Dotenv\Regex;
 
 abstract class Result
 {

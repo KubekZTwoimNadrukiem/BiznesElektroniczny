@@ -55,14 +55,6 @@
           {include file='catalog/_partials/product-variants.tpl'}
         {/block}
         
-        <script>
-          function discounted_event(){
-            gtag('event', 'discounted_product_purchase', {
-              'url': '{$product.url}',
-              'product_name': '{$product.name}'
-            });
-          }
-        </script>
 
         <div class="add">
           <button
@@ -71,9 +63,6 @@
             type="submit"
             {if !$product.add_to_cart_url}
               disabled
-            {/if}
-            {if $product.has_discount}
-              onclick="discounted_event()"
             {/if}
           ><span class="cart-span">
             <i class="material-icons shopping-cart">&#xE547;</i>
