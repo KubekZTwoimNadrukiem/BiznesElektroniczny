@@ -1,10 +1,10 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Dotenv;
+namespace ps_metrics_module_v4_0_8\Dotenv;
 
-use ps_metrics_module_v4_0_10\Dotenv\Environment\DotenvFactory;
-use ps_metrics_module_v4_0_10\Dotenv\Environment\FactoryInterface;
-use ps_metrics_module_v4_0_10\Dotenv\Exception\InvalidPathException;
+use ps_metrics_module_v4_0_8\Dotenv\Environment\DotenvFactory;
+use ps_metrics_module_v4_0_8\Dotenv\Environment\FactoryInterface;
+use ps_metrics_module_v4_0_8\Dotenv\Exception\InvalidPathException;
 /**
  * This is the dotenv class.
  *

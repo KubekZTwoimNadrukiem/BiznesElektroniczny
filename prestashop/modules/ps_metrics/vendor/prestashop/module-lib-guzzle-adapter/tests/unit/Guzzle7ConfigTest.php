@@ -1,9 +1,9 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10;
+namespace ps_metrics_module_v4_0_8;
 
-use ps_metrics_module_v4_0_10\PHPUnit\Framework\TestCase;
-use ps_metrics_module_v4_0_10\Prestashop\ModuleLibGuzzleAdapter\Guzzle7\Config;
+use ps_metrics_module_v4_0_8\PHPUnit\Framework\TestCase;
+use ps_metrics_module_v4_0_8\Prestashop\ModuleLibGuzzleAdapter\Guzzle7\Config;
 class Guzzle7ConfigTest extends TestCase
 {
     public function testConfigWithoutChangeNeeded()

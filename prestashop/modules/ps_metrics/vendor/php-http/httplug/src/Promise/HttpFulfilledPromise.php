@@ -3,7 +3,7 @@
 namespace Http\Client\Promise;
 
 use Http\Client\Exception;
-use ps_metrics_module_v4_0_10\Http\Promise\Promise;
+use ps_metrics_module_v4_0_8\Http\Promise\Promise;
 use Psr\Http\Message\ResponseInterface;
 final class HttpFulfilledPromise implements Promise
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Dotenv\Environment\Adapter;
+namespace ps_metrics_module_v4_0_8\Dotenv\Environment\Adapter;
 
-use ps_metrics_module_v4_0_10\PhpOption\None;
-use ps_metrics_module_v4_0_10\PhpOption\Some;
+use ps_metrics_module_v4_0_8\PhpOption\None;
+use ps_metrics_module_v4_0_8\PhpOption\Some;
 class EnvConstAdapter implements AdapterInterface
 {
     /**

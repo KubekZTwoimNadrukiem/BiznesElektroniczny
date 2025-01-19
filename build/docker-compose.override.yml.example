@@ -1,0 +1,21 @@
+# przed uzyciem, zduplikuj ten plik, usun ".example" z rozszerzenia,
+# upewnij sie ze wartosci w kwadratowych sa odpowiednie dla twojego
+# systemu, i uruchom poprzez "(sudo) docker-compose up"
+
+services:
+  nadruk-mariadb:
+    ports:
+      # domyslny port mysql, expose'owany w razie
+      # potrzeby bezposredniej interakcji
+      - 3306:3306
+    volumes:
+      - [/home/user/Documents/code/business/db]:/var/lib/mysql
+
+  nadruk-prestashop:
+    ports:
+      # port z ktorego bedzie mozna polaczyc sie do sklepu
+      - [8089]:80
+    volumes:
+      # lokacja na komputerze, w ktorej znajduje sie folder
+      # sklepu
+      - [/home/user/Documents/code/business/prestashop]:/var/www/html

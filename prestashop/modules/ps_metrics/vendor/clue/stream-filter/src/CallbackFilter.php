@@ -1,6 +1,6 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Clue\StreamFilter;
+namespace ps_metrics_module_v4_0_8\Clue\StreamFilter;
 
 /**
  * @internal

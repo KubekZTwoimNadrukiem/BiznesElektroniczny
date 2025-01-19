@@ -1,8 +1,8 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Http\Message\Encoding;
+namespace ps_metrics_module_v4_0_8\Http\Message\Encoding;
 
-use ps_metrics_module_v4_0_10\Clue\StreamFilter as Filter;
+use ps_metrics_module_v4_0_8\Clue\StreamFilter as Filter;
 use Psr\Http\Message\StreamInterface;
 /**
  * Stream decompress (RFC 1950).

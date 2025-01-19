@@ -1,6 +1,6 @@
 <?php
 
-namespace ps_metrics_module_v4_0_10\Http\Message;
+namespace ps_metrics_module_v4_0_8\Http\Message;
 
 /**
  * Cookie Jar holds a set of Cookies.
