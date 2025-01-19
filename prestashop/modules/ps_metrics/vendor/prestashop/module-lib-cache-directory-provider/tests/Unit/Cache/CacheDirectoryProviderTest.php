@@ -18,10 +18,10 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  */
-namespace ps_metrics_module_v4_0_8\Tests\Unit\Cache;
+namespace ps_metrics_module_v4_0_10\Tests\Unit\Cache;
 
-use ps_metrics_module_v4_0_8\PHPUnit\Framework\TestCase;
-use ps_metrics_module_v4_0_8\PrestaShop\ModuleLibCacheDirectoryProvider\Cache\CacheDirectoryProvider;
+use ps_metrics_module_v4_0_10\PHPUnit\Framework\TestCase;
+use ps_metrics_module_v4_0_10\PrestaShop\ModuleLibCacheDirectoryProvider\Cache\CacheDirectoryProvider;
 class CacheDirectoryProviderTest extends TestCase
 {
     public function testItIsReturnValidPathForVersionLessThan17()
