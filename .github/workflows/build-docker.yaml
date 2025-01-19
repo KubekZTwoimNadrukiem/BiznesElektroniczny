@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Build Image
         run: |
-          cd prestashop
           docker build . -t 'aegiru/nadruk-prestashop:latest'
       - name: Login & Push
         run: |
