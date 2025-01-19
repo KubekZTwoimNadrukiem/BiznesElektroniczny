@@ -12,10 +12,8 @@ services:
       - [/home/user/Documents/code/business/db]:/var/lib/mysql
 
   nadruk-prestashop:
+    image: 'nadruk_prestashop:latest'
     ports:
       # port z ktorego bedzie mozna polaczyc sie do sklepu
       - [8089]:80
-    volumes:
-      # lokacja na komputerze, w ktorej znajduje sie folder
-      # sklepu
-      - [/home/user/Documents/code/business/prestashop]:/var/www/html
+      - 8443:443
