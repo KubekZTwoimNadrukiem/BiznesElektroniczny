@@ -15,12 +15,14 @@
 - Anastasiia Lieshchova, 191601
 - Yuliia Lieshchova, 191527
 
-## Kroki instalacyjne
+## Kroki do włączenia lokalnie.
 
 1. Sklonuj repozytorium.
-2. Skopiuj _docker-compose.override.yml.example_ bez końcowego '.example' i zmień wartości w środku zgodnie ze swoim środowiskiem.
+2. Uruchom skrypt `build.sh` w folderze repozytorium.
 3. Użyj komendy `docker-compose up` w środku folderu 'build'.
-4. Połącz się z _localhost:[port]_ i sprawdź sklep.
+4. Użyj komendy `sudo docker exec nadruk-mariadb /bin/bash -c 'mysql -u "yarn_user" -p"yarn_password" < /var/lib/mysql/dump.sql'`.
+5. Połącz się z _localhost:8443_ i sprawdź sklep.
+6. Nie zapomnij użyć komendy `sudo docker exec -i nadruk-mariadb mysqldump -u "yarn_user" -p"yarn_password" --databases prestashop --skip-comments --no-tablespaces > [path]/db/dump.sql` po skończeniu pracy nad sklepem.
 
 ## Użyte wtyczki
 - Owl Carousel 2, https://owlcarousel2.github.io/OwlCarousel2/ 

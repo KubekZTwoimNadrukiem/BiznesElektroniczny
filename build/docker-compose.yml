@@ -23,5 +23,11 @@ services:
     networks:
       - kubek-z-twoim-nadrukiem
 
+  memcached:
+    container_name: memcached
+    image: memcached:latest
+    networks:
+      - kubek-z-twoim-nadrukiem
+
 networks:
   kubek-z-twoim-nadrukiem:

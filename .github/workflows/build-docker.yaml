@@ -1,0 +1,25 @@
+name: Build and Publish image to Docker Hub
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Image
+        run: |
+          cd prestashop
+          docker build . -t 'aegiru/nadruk-prestashop:latest'
+      - name: Login & Push
+        run: |
+          docker login -u aegiru -p ${{ secrets.DOCKER_HUB_TOKEN }}
+          docker push aegiru/nadruk-prestashop:latest
+
