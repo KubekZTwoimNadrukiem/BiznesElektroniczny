@@ -25,7 +25,12 @@ RUN rm -rf /var/www/html/install
 RUN rm -rf install/
 
 RUN rm -rf /var/www/html/app/config/parameters.php
-RUN mv /var/www/html/app/config/parameters.php.alt /var/www/html/app/config/parameters.php
+COPY prestashop/app/config/parameters.php.alt /var/www/html/app/config/parameters.php
+
+COPY deploy/init/import_db.sh /tmp/init-scripts/post-install.sh
+COPY deploy/init/dump.sql /tmp/sql/dump.sql
+RUN chmod 755 -R /tmp/sql/dump.sql
+RUN chmod 755 -R /tmp/init-scripts/post-install.sh
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
