@@ -2,7 +2,6 @@ package com.example;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -38,14 +37,14 @@ public class MainTest {
     @BeforeAll
     public static void createService() throws IOException {
         //xattr -d com.apple.quarantine chromedriver
-        driverService = new ChromeDriverService.Builder().usingDriverExecutable(new File("chromedriver")).usingAnyFreePort().build();
+        driverService = new ChromeDriverService.Builder().usingDriverExecutable(new File("chromedriver-131-win64")).usingAnyFreePort().build();
         driverService.start();
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--remote-allow-origins=*");
         //ChromeDriver does not support Chrome v131
         //webDriver = new ChromeDriver(chromeOptions);
         webDriver = new RemoteWebDriver(driverService.getUrl(), new ChromeOptions());
-        wait = new WebDriverWait(webDriver, 5);
+        wait = new WebDriverWait(webDriver, 10);
         return;
     }
     @AfterAll   
@@ -80,8 +79,8 @@ public class MainTest {
     //TODO change categories
     public void testAddToCart() {
         int[] quantities = IntStream.rangeClosed(0, 19).map(a -> a % 3 + 1).toArray();
-        int offset = addProductsFromCategory("http://localhost:8089/en/41-cotton", quantities, 0);
-        offset += addProductsFromCategory("http://localhost:8089/en/17-children-buttons", quantities, offset);
+        int offset = addProductsFromCategory("https://localhost:8443/index.php?id_category=41&controller=category&id_lang=1", quantities, 0);
+        offset += addProductsFromCategory("https://localhost:8443/index.php?id_category=17&controller=category&id_lang=1", quantities, offset);
         webDriver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         int expectedResult = (Arrays.stream(Arrays.copyOf(quantities, offset))).sum();
@@ -92,7 +91,7 @@ public class MainTest {
     @Order(2)
     @Test
     public void testSearchAndAddToCart() {
-        webDriver.get("http://localhost:8089/en/");
+        webDriver.get("https://localhost:8443/index.php");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String expectedResult = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='search_widget']//input[@name='s']")));
@@ -116,7 +115,7 @@ public class MainTest {
     @Order(3)
     @Test
     public void testRemoveFromCart() {
-        webDriver.get("http://localhost:8089/en/cart?action=show");
+        webDriver.get("https://localhost:8443/index.php?controller=cart&action=show");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("cart-products-count")));
         String cartSize = webDriver.findElement(By.className("cart-products-count")).getText().replaceAll("[()]", "");
         wait.until(ExpectedConditions.elementToBeClickable(By.className("remove-from-cart")));
@@ -139,7 +138,7 @@ public class MainTest {
     @Order(4)
     @Test
     public void testCreateAccount(){
-        webDriver.get("http://localhost:8089/en/login?create_account=1");
+        webDriver.get("https://localhost:8443/index.php?controller=authentication&create_account=1");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-firstname")));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-lastname")));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-email")));
@@ -155,7 +154,7 @@ public class MainTest {
         webDriver.findElement(By.name("psgdpr")).click();
         webDriver.findElement(By.cssSelector("button.form-control-submit")).click();
         try {
-            Thread.sleep(Duration.ofSeconds(1));
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
         }
         assertDoesNotThrow(() -> webDriver.findElement(By.className("account")));
@@ -164,7 +163,7 @@ public class MainTest {
     @Order(5)
     @Test
     public void testPlaceOrder() {
-        webDriver.get("http://localhost:8089/en/cart?action=show");
+        webDriver.get("https://localhost:8443/index.php?controller=cart&action=show");
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.btn-primary")));
         webDriver.findElement(By.cssSelector("a.btn-primary")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-address1")));
@@ -185,13 +184,13 @@ public class MainTest {
         jsExecutor.executeScript("arguments[0].click();", webDriver.findElement(By.id("payment-option-1")));
         webDriver.findElement(By.id("conditions_to_approve[terms-and-conditions]")).click();
         try {
-            Thread.sleep(Duration.ofSeconds(1));
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
         }
         //wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("//div[@id='payment-confirmation']//button[@type='submit']")));
         webDriver.findElement(By.xpath("//div[@id='payment-confirmation']//button[@type='submit']")).click();
         try {
-            Thread.sleep(Duration.ofSeconds(2));
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
         }
         assertDoesNotThrow(() -> webDriver.findElement(By.xpath("//h3[contains(., 'Your order is confirmed')]")));
@@ -200,7 +199,7 @@ public class MainTest {
     @Order(6)
     @Test
     public void testCheckProductDetails() {
-        webDriver.get("http://localhost:8089/en/my-account");
+        webDriver.get("https://localhost:8443/index.php?controller=my-account");
         wait.until(ExpectedConditions.elementToBeClickable(By.id("history-link")));
         webDriver.findElement(By.id("history-link")).click();
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a[data-link-action='view-order-details']")));
